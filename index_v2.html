@@ -25,6 +25,8 @@
     --blue-light: #E6EEF8;
     --purple: #6B3FA0;
     --purple-light: #F3EEF9;
+    --teal: #1B7A72;
+    --teal-light: #E6F4F3;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
     --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
@@ -602,6 +604,7 @@
   .idea-cat-badge.towrite { background: var(--accent-light); color: var(--accent); }
   .idea-cat-badge.tolearn { background: var(--purple-light); color: var(--purple); }
   .idea-cat-badge.toread  { background: var(--orange-light); color: var(--orange); }
+  .idea-cat-badge.random  { background: var(--teal-light);  color: var(--teal);   }
 
   /* Category picker (in input area & quick idea panel) */
   .idea-cat-picker {
@@ -617,6 +620,7 @@
   .idea-cat-btn.active.towrite { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
   .idea-cat-btn.active.tolearn { background: var(--purple-light); color: var(--purple); border-color: var(--purple); }
   .idea-cat-btn.active.toread  { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+  .idea-cat-btn.active.random  { background: var(--teal-light);  color: var(--teal);  border-color: var(--teal);  }
 
   /* Ideas filter bar */
   .ideas-filter-bar {
@@ -1569,7 +1573,8 @@ const IDEA_CATS = [
   { id: 'todo',    label: 'To Do',    cls: 'todo'    },
   { id: 'towrite', label: 'To Write', cls: 'towrite' },
   { id: 'tolearn', label: 'To Research', cls: 'tolearn' },
-  { id: 'toread',  label: 'To Read',  cls: 'toread'  },
+  { id: 'toread',  label: 'To Read',    cls: 'toread'  },
+  { id: 'random',  label: '随机记录',   cls: 'random'  },
 ];
 let ideasCatFilter = new Set();   // empty = show all
 let ideasDoneFilter = 'all';      // 'all' | 'done' | 'undone'
@@ -2075,6 +2080,7 @@ const IDEA_CAT_COLORS = {
   towrite: { light: '#E8F0E6', main: '#2D5A27' },
   tolearn: { light: '#F3EEF9', main: '#6B3FA0' },
   toread:  { light: '#FFF3E6', main: '#C4660A' },
+  random:  { light: '#E6F4F3', main: '#1B7A72' },
 };
 
 function renderIdeasFilterBar() {
