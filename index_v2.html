@@ -1299,8 +1299,7 @@
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQuickIdea();}"></textarea>
           <button class="btn-orange" onclick="addQuickIdea()">保存</button>
         </div>
-        <div class="idea-cat-picker" id="quickIdeaCatPicker" style="margin-top:8px;margin-bottom:4px;"></div>
-        <div class="quick-idea-recent" id="quickIdeaRecent"></div>
+        <div class="idea-cat-picker" id="quickIdeaCatPicker" style="margin-top:8px;"></div>
       </div>
     </div>
 
@@ -1569,7 +1568,7 @@ let historyCache = [];
 const IDEA_CATS = [
   { id: 'todo',    label: 'To Do',    cls: 'todo'    },
   { id: 'towrite', label: 'To Write', cls: 'towrite' },
-  { id: 'tolearn', label: 'To Learn', cls: 'tolearn' },
+  { id: 'tolearn', label: 'To Research', cls: 'tolearn' },
   { id: 'toread',  label: 'To Read',  cls: 'toread'  },
 ];
 let ideasCatFilter = new Set();   // empty = show all
