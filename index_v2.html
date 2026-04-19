@@ -23,6 +23,8 @@
     --red-light: #FDEAEA;
     --blue: #2D5A8A;
     --blue-light: #E6EEF8;
+    --purple: #6B3FA0;
+    --purple-light: #F3EEF9;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
     --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
     --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
@@ -336,7 +338,7 @@
     transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
     opacity: 0; margin-bottom: 0;
   }
-  .quick-idea-panel.open { max-height: 300px; opacity: 1; margin-bottom: 16px; }
+  .quick-idea-panel.open { max-height: 400px; opacity: 1; margin-bottom: 16px; }
 
   .quick-idea-inner {
     background: var(--surface);
@@ -559,6 +561,61 @@
   }
   .idea-item:hover .idea-delete { opacity: 1; }
   .idea-delete:hover { color: var(--red); background: var(--red-light); }
+
+  /* Done state */
+  .idea-item.done { opacity: 0.55; }
+  .idea-item.done .idea-text { text-decoration: line-through; }
+  .idea-done-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 50%;
+    width: 18px; height: 18px; min-width: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 5px; transition: all var(--transition); font-size: 10px; color: transparent;
+  }
+  .idea-item.done .idea-done-btn { background: var(--accent); border-color: var(--accent); color: white; }
+  .idea-done-btn:hover { border-color: var(--accent); }
+
+  /* Category badges on cards */
+  .idea-cats { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+  .idea-cat-badge {
+    font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 10px;
+    line-height: 1.6;
+  }
+  .idea-cat-badge.todo    { background: var(--blue-light);   color: var(--blue);   }
+  .idea-cat-badge.towrite { background: var(--accent-light); color: var(--accent); }
+  .idea-cat-badge.tolearn { background: var(--purple-light); color: var(--purple); }
+  .idea-cat-badge.toread  { background: var(--orange-light); color: var(--orange); }
+
+  /* Category picker (in input area & quick idea panel) */
+  .idea-cat-picker {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;
+  }
+  .idea-cat-btn {
+    font-size: 12px; font-weight: 500; padding: 4px 11px; border-radius: 14px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    cursor: pointer; transition: all var(--transition); color: var(--text-secondary);
+  }
+  .idea-cat-btn:hover { background: var(--surface-hover); }
+  .idea-cat-btn.active.todo    { background: var(--blue-light);   color: var(--blue);   border-color: var(--blue);   }
+  .idea-cat-btn.active.towrite { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .idea-cat-btn.active.tolearn { background: var(--purple-light); color: var(--purple); border-color: var(--purple); }
+  .idea-cat-btn.active.toread  { background: var(--orange-light); color: var(--orange); border-color: var(--orange); }
+
+  /* Ideas filter bar */
+  .ideas-filter-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+  }
+  .ideas-cat-filter { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ideas-done-filter { display: flex; gap: 4px; }
+
+  /* Ideas input area */
+  .idea-input-area {
+    margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-md); padding: 12px 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .idea-input-wrap { display: flex; gap: 8px; margin-bottom: 0; }
 
   .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
   .empty-state-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
@@ -1191,6 +1248,7 @@
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQuickIdea();}"></textarea>
           <button class="btn-orange" onclick="addQuickIdea()">保存</button>
         </div>
+        <div class="idea-cat-picker" id="quickIdeaCatPicker" style="margin-top:8px;margin-bottom:4px;"></div>
         <div class="quick-idea-recent" id="quickIdeaRecent"></div>
       </div>
     </div>
@@ -1256,9 +1314,22 @@
 
   <!-- ==================== RANDOM IDEAS ==================== -->
   <div class="view" id="view-ideas">
-    <div class="idea-input-wrap">
-      <input class="idea-input" id="ideaInput" placeholder="记下一个灵感、想法、或任何闪念..." onkeydown="if(event.key==='Enter')addIdea()">
-      <button class="btn btn-primary" onclick="addIdea()">记录</button>
+    <!-- Filter toolbar -->
+    <div class="ideas-filter-bar">
+      <div class="ideas-cat-filter" id="ideasCatFilter"></div>
+      <div class="ideas-done-filter">
+        <button class="filter-btn active" data-done="all" onclick="setIdeaDoneFilter('all')">全部</button>
+        <button class="filter-btn" data-done="undone" onclick="setIdeaDoneFilter('undone')">未完成</button>
+        <button class="filter-btn" data-done="done" onclick="setIdeaDoneFilter('done')">已完成</button>
+      </div>
+    </div>
+    <!-- Input area -->
+    <div class="idea-input-area">
+      <div class="idea-input-wrap">
+        <input class="idea-input" id="ideaInput" placeholder="记下一个灵感、想法、或任何闪念..." onkeydown="if(event.key==='Enter')addIdea()">
+        <button class="btn btn-primary" onclick="addIdea()">记录</button>
+      </div>
+      <div class="idea-cat-picker" id="ideaCatPicker"></div>
     </div>
     <div class="ideas-list" id="ideasList"></div>
   </div>
@@ -1434,6 +1505,18 @@ async function fsGetDoc(colName, docId) {
 let ideasCache = [];
 let researchCache = [];
 let historyCache = [];
+
+// ===== Ideas categories =====
+const IDEA_CATS = [
+  { id: 'todo',    label: 'To Do',    cls: 'todo'    },
+  { id: 'towrite', label: 'To Write', cls: 'towrite' },
+  { id: 'tolearn', label: 'To Learn', cls: 'tolearn' },
+  { id: 'toread',  label: 'To Read',  cls: 'toread'  },
+];
+let ideasCatFilter = new Set();   // empty = show all
+let ideasDoneFilter = 'all';      // 'all' | 'done' | 'undone'
+let _quickIdeaCats = new Set();   // selected cats for quick-idea panel
+let _ideaInputCats = new Set();   // selected cats for ideas-view input
 let todayDocId = null; // Firestore doc ID for today's auto-save entry
 let todayData = null;  // { title, html, timerSeconds }
 
@@ -1824,18 +1907,28 @@ function toggleQuickIdea() {
   if (isOpen) {
     document.getElementById('quickIdeaInput').focus();
     renderQuickIdeaRecent();
+    renderCatPicker('quickIdeaCatPicker', _quickIdeaCats, 'toggleQuickIdeaCat');
   } else {
     document.getElementById('editor').focus();
   }
+}
+
+function toggleQuickIdeaCat(catId) {
+  if (_quickIdeaCats.has(catId)) _quickIdeaCats.delete(catId);
+  else _quickIdeaCats.add(catId);
+  renderCatPicker('quickIdeaCatPicker', _quickIdeaCats, 'toggleQuickIdeaCat');
 }
 
 async function addQuickIdea() {
   const input = document.getElementById('quickIdeaInput');
   const text = input.value.trim();
   if (!text) return;
-  const docId = await fsAdd('ideas', { text });
-  ideasCache.unshift({ _docId: docId, text, createdAt: new Date() });
+  const categories = [..._quickIdeaCats];
+  const docId = await fsAdd('ideas', { text, categories, done: false });
+  ideasCache.unshift({ _docId: docId, text, categories, done: false, createdAt: new Date() });
   input.value = '';
+  _quickIdeaCats.clear();
+  renderCatPicker('quickIdeaCatPicker', _quickIdeaCats, 'toggleQuickIdeaCat');
   input.placeholder = '已保存！继续记录...';
   setTimeout(() => { input.placeholder = '灵感稍纵即逝，快记下来...'; }, 1200);
   updateIdeasBadge();
@@ -1853,13 +1946,22 @@ function renderQuickIdeaRecent() {
 }
 
 // ===== Ideas =====
+function toggleInputCat(catId) {
+  if (_ideaInputCats.has(catId)) _ideaInputCats.delete(catId);
+  else _ideaInputCats.add(catId);
+  renderCatPicker('ideaCatPicker', _ideaInputCats, 'toggleInputCat');
+}
+
 async function addIdea() {
   const input = document.getElementById('ideaInput');
   const text = input.value.trim();
   if (!text) return;
-  const docId = await fsAdd('ideas', { text });
-  ideasCache.unshift({ _docId: docId, text, createdAt: new Date() });
+  const categories = [..._ideaInputCats];
+  const docId = await fsAdd('ideas', { text, categories, done: false });
+  ideasCache.unshift({ _docId: docId, text, categories, done: false, createdAt: new Date() });
   input.value = '';
+  _ideaInputCats.clear();
+  renderCatPicker('ideaCatPicker', _ideaInputCats, 'toggleInputCat');
   renderIdeas();
   updateIdeasBadge();
 }
@@ -1871,16 +1973,112 @@ async function deleteIdea(docId) {
   updateIdeasBadge();
 }
 
+async function toggleIdeaDone(docId) {
+  const idea = ideasCache.find(i => i._docId === docId);
+  if (!idea) return;
+  const newDone = !idea.done;
+  await fsUpdate('ideas', docId, { done: newDone });
+  idea.done = newDone;
+  renderIdeas();
+}
+
+function setIdeaDoneFilter(val) {
+  ideasDoneFilter = val;
+  document.querySelectorAll('.ideas-done-filter .filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.done === val);
+  });
+  renderIdeas();
+}
+
+function toggleIdeaCatFilter(catId) {
+  if (catId === 'all') {
+    ideasCatFilter.clear();
+  } else {
+    if (ideasCatFilter.has(catId)) ideasCatFilter.delete(catId);
+    else ideasCatFilter.add(catId);
+  }
+  renderIdeasFilterBar();
+  renderIdeas();
+}
+
+const IDEA_CAT_COLORS = {
+  todo:    { light: '#E6EEF8', main: '#2D5A8A' },
+  towrite: { light: '#E8F0E6', main: '#2D5A27' },
+  tolearn: { light: '#F3EEF9', main: '#6B3FA0' },
+  toread:  { light: '#FFF3E6', main: '#C4660A' },
+};
+
+function renderIdeasFilterBar() {
+  const container = document.getElementById('ideasCatFilter');
+  if (!container) return;
+  const allActive = ideasCatFilter.size === 0;
+  const catBtns = IDEA_CATS.map(c => {
+    const active = ideasCatFilter.has(c.id);
+    const col = IDEA_CAT_COLORS[c.cls];
+    const style = active ? `background:${col.light};color:${col.main};border-color:${col.main}` : '';
+    return `<button class="filter-btn${active ? ' active' : ''}" onclick="toggleIdeaCatFilter('${c.id}')" style="${style}">${c.label}</button>`;
+  }).join('');
+  const noneActive = ideasCatFilter.has('none');
+  const noneBtns = `<button class="filter-btn${noneActive ? ' active' : ''}" onclick="toggleIdeaCatFilter('none')">无分类</button>`;
+  container.innerHTML =
+    `<button class="filter-btn${allActive ? ' active' : ''}" onclick="toggleIdeaCatFilter('all')">全部</button>` +
+    catBtns + noneBtns;
+}
+
+function renderCatPicker(containerId, selectedSet, toggleFn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = IDEA_CATS.map(c =>
+    `<button class="idea-cat-btn ${c.cls}${selectedSet.has(c.id) ? ' active' : ''}" onclick="${toggleFn}('${c.id}')">${c.label}</button>`
+  ).join('');
+}
+
 function renderIdeas() {
+  // Initialize pickers and filter bar on first render
+  renderIdeasFilterBar();
+  renderCatPicker('ideaCatPicker', _ideaInputCats, 'toggleInputCat');
+
   const container = document.getElementById('ideasList');
-  if (ideasCache.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128161;</div><div class="empty-state-text">还没有记录任何想法</div><div class="empty-state-sub">灵感稍纵即逝，随时记录下来</div></div>`;
+
+  // Apply filters
+  let items = ideasCache.filter(idea => {
+    const cats = idea.categories || [];
+    // Category filter
+    if (ideasCatFilter.size > 0) {
+      const hasNone = ideasCatFilter.has('none') && cats.length === 0;
+      const hasCat = IDEA_CATS.some(c => ideasCatFilter.has(c.id) && cats.includes(c.id));
+      if (!hasNone && !hasCat) return false;
+    }
+    // Done filter
+    if (ideasDoneFilter === 'done' && !idea.done) return false;
+    if (ideasDoneFilter === 'undone' && idea.done) return false;
+    return true;
+  });
+
+  if (items.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128161;</div><div class="empty-state-text">没有符合条件的想法</div><div class="empty-state-sub">换一个筛选条件试试</div></div>`;
     return;
   }
-  container.innerHTML = ideasCache.map(idea => {
+
+  container.innerHTML = items.map(idea => {
     const d = idea.createdAt instanceof Date ? idea.createdAt : (idea.createdAt?.toDate ? idea.createdAt.toDate() : new Date());
     const t = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    return `<div class="idea-item"><div class="idea-bullet"></div><div class="idea-content"><div class="idea-text">${escapeHTML(idea.text)}</div><div class="idea-meta">${t}</div></div><button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button></div>`;
+    const cats = idea.categories || [];
+    const catBadges = cats.length > 0
+      ? `<div class="idea-cats">${cats.map(c => {
+          const def = IDEA_CATS.find(x => x.id === c);
+          return def ? `<span class="idea-cat-badge ${def.cls}">${def.label}</span>` : '';
+        }).join('')}</div>`
+      : '';
+    return `<div class="idea-item${idea.done ? ' done' : ''}">
+      <button class="idea-done-btn" onclick="toggleIdeaDone('${idea._docId}')" title="${idea.done ? '标记为未完成' : '标记为已完成'}">&#10003;</button>
+      <div class="idea-content">
+        <div class="idea-text">${escapeHTML(idea.text)}</div>
+        ${catBadges}
+        <div class="idea-meta">${t}</div>
+      </div>
+      <button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button>
+    </div>`;
   }).join('');
 }
 
