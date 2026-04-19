@@ -1800,15 +1800,12 @@ function todayKey() {
 
 // ===== Auth Handlers =====
 function googleLogin() {
+  document.getElementById('loginLoading').style.display = 'flex';
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider)
-    .then(result => {
-      initApp();
-    })
-    .catch(err => {
-      console.error('Google login error:', err);
-      document.getElementById('loginLoading').style.display = 'none';
-    });
+  auth.signInWithRedirect(provider).catch(err => {
+    console.error('Google login error:', err);
+    document.getElementById('loginLoading').style.display = 'none';
+  });
 }
 
 function logout() {
