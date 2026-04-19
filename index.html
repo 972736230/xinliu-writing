@@ -2488,6 +2488,11 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
+// ===== Handle Redirect Result =====
+auth.getRedirectResult().catch(err => {
+  console.error('Redirect result error:', err);
+});
+
 // ===== Auth State Handler =====
 auth.onAuthStateChanged(user => {
   if (user) {
