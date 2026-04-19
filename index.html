@@ -1734,7 +1734,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
-<script src="https://accounts.google.com/gsi/client"></script>
 
 <script>
 // ===== Firebase Config =====
@@ -1801,24 +1800,15 @@ function todayKey() {
 
 // ===== Auth Handlers =====
 function googleLogin() {
-  const clientId = '1025097404685-s0h25t848js014bt4llm809cq38sa36j.apps.googleusercontent.com';
-  google.accounts.id.initialize({ client_id: clientId, callback: handleCredentialResponse });
-  google.accounts.id.renderButton(document.getElementById('btnGoogleLogin'), { theme: 'outline', size: 'large' });
-  google.accounts.id.prompt();
-}
-
-function handleCredentialResponse(response) {
-  document.getElementById('loginLoading').style.display = 'flex';
-  const credential = response.credential;
-  auth.signInWithCustomToken(credential).catch(err => {
-    const decodedToken = JSON.parse(atob(credential.split('.')[1]));
-    auth.signInAnonymously().then(userCred => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(result => {
       initApp();
-    }).catch(e => {
-      console.error('Auth error:', e);
+    })
+    .catch(err => {
+      console.error('Google login error:', err);
       document.getElementById('loginLoading').style.display = 'none';
     });
-  });
 }
 
 function logout() {
