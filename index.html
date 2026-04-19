@@ -1800,12 +1800,12 @@ function todayKey() {
 
 // ===== Auth Handlers =====
 function googleLogin() {
-  document.getElementById('loginLoading').style.display = 'flex';
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithRedirect(provider).catch(err => {
-    console.error('Google login error:', err);
-    document.getElementById('loginLoading').style.display = 'none';
-  });
+  auth.signInWithPopup(provider)
+    .then(result => { /* onAuthStateChanged handles the rest */ })
+    .catch(err => {
+      console.error('Google login error:', err);
+    });
 }
 
 function logout() {
@@ -2487,11 +2487,6 @@ function escapeHTML(str) {
   div.textContent = str;
   return div.innerHTML;
 }
-
-// ===== Handle Redirect Result =====
-auth.getRedirectResult().catch(err => {
-  console.error('Redirect result error:', err);
-});
 
 // ===== Auth State Handler =====
 auth.onAuthStateChanged(user => {
