@@ -900,6 +900,26 @@
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
+  /* ===== History Toolbar ===== */
+  .history-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .history-date-filter { display: flex; align-items: center; gap: 6px; }
+  .date-input { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 8px; font-size: 13px; color: var(--text-primary); background: var(--surface); cursor: pointer; }
+  .date-input:focus { outline: none; border-color: var(--accent); }
+  .date-sep { font-size: 13px; color: var(--text-tertiary); }
+  .date-clear-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-tertiary); padding: 4px 6px; border-radius: 4px; }
+  .date-clear-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
+  /* Hashtag Cloud */
+  .hashtag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 0; }
+  .hashtag-cloud:empty { display: none; }
+  .tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); transition: all var(--transition); }
+  .tag-chip:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-chip.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .tag-count { font-size: 11px; color: var(--text-tertiary); }
+  .tag-chip.active .tag-count { color: var(--accent); }
+  /* Hashtag chips on history cards */
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .card-tag { font-size: 11px; color: var(--accent); background: var(--accent-light); border-radius: 99px; padding: 1px 7px; }
+
   /* ===== Stats Sidebar ===== */
   .write-layout { display: flex; height: 100%; align-items: stretch; }
   .stats-sidebar {
@@ -992,7 +1012,7 @@
     <button class="nav-tab active" data-view="write" onclick="switchView('write')">&#9997;&#65039; 今日写作</button>
     <button class="nav-tab" data-view="ideas" onclick="switchView('ideas')">&#128161; 随机想法 <span class="badge" id="ideasBadge">0</span></button>
     <button class="nav-tab" data-view="research" onclick="switchView('research')">&#128269; 调研汇总 <span class="badge" id="researchBadge">0</span></button>
-    <button class="nav-tab" data-view="history" onclick="switchView('history')">&#128218; 写作记录</button>
+    <button class="nav-tab" data-view="history" onclick="switchView('history')">&#128218; 写作记录 <span class="badge" id="historyBadge">0</span></button>
   </nav>
 
   <!-- ==================== TODAY'S WRITING ==================== -->
@@ -1165,11 +1185,20 @@
 
   <!-- ==================== HISTORY ==================== -->
   <div class="view" id="view-history">
-    <div class="history-filter">
-      <button class="filter-btn active" data-filter="all" onclick="filterHistory('all')">全部</button>
-      <button class="filter-btn" data-filter="manual" onclick="filterHistory('manual')">手动保存</button>
-      <button class="filter-btn" data-filter="auto" onclick="filterHistory('auto')">自动保存</button>
+    <div class="history-toolbar">
+      <div class="history-filter">
+        <button class="filter-btn active" data-filter="all" onclick="filterHistory('all')">全部</button>
+        <button class="filter-btn" data-filter="manual" onclick="filterHistory('manual')">手动保存</button>
+        <button class="filter-btn" data-filter="auto" onclick="filterHistory('auto')">自动保存</button>
+      </div>
+      <div class="history-date-filter">
+        <input type="date" id="dateFrom" class="date-input" onchange="applyDateFilter()" title="开始日期">
+        <span class="date-sep">至</span>
+        <input type="date" id="dateTo" class="date-input" onchange="applyDateFilter()" title="结束日期">
+        <button class="date-clear-btn" id="dateClearBtn" onclick="clearDateFilter()" style="display:none">✕</button>
+      </div>
     </div>
+    <div class="hashtag-cloud" id="hashtagCloud"></div>
     <div class="history-list" id="historyList"></div>
   </div>
 </div>
@@ -1816,6 +1845,44 @@ function updateResearchBadge() {
 
 // ===== History =====
 let historyFilter = 'all';
+let historyDateFrom = '';
+let historyDateTo = '';
+let historyTagFilter = '';
+
+function updateHistoryBadge() {
+  const el = document.getElementById('historyBadge');
+  if (el) el.textContent = historyCache.length;
+}
+
+function extractHashtags(text) {
+  const matches = (text || '').match(/#([\w\u4e00-\u9fa5]+)/g) || [];
+  return [...new Set(matches)];
+}
+
+function renderHashtagCloud() {
+  const cloud = document.getElementById('hashtagCloud');
+  if (!cloud) return;
+  // Count all hashtags across all history entries
+  const counts = {};
+  historyCache.forEach(entry => {
+    extractHashtags((entry.text || '') + ' ' + (entry.title || '')).forEach(tag => {
+      counts[tag] = (counts[tag] || 0) + 1;
+    });
+  });
+  const tags = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  if (tags.length === 0) { cloud.innerHTML = ''; return; }
+  cloud.innerHTML = tags.map(([tag, count]) =>
+    `<span class="tag-chip${historyTagFilter === tag ? ' active' : ''}" onclick="filterByTag('${tag}')">
+      ${escapeHTML(tag)} <span class="tag-count">${count}</span>
+    </span>`
+  ).join('');
+}
+
+function filterByTag(tag) {
+  historyTagFilter = historyTagFilter === tag ? '' : tag;
+  renderHashtagCloud();
+  renderHistory();
+}
 
 function filterHistory(filter) {
   historyFilter = filter;
@@ -1824,13 +1891,37 @@ function filterHistory(filter) {
   renderHistory();
 }
 
+function applyDateFilter() {
+  historyDateFrom = document.getElementById('dateFrom').value;
+  historyDateTo = document.getElementById('dateTo').value;
+  const clearBtn = document.getElementById('dateClearBtn');
+  if (clearBtn) clearBtn.style.display = (historyDateFrom || historyDateTo) ? '' : 'none';
+  renderHistory();
+}
+
+function clearDateFilter() {
+  historyDateFrom = ''; historyDateTo = '';
+  document.getElementById('dateFrom').value = '';
+  document.getElementById('dateTo').value = '';
+  const clearBtn = document.getElementById('dateClearBtn');
+  if (clearBtn) clearBtn.style.display = 'none';
+  renderHistory();
+}
+
 function renderHistory() {
   let items = [...historyCache];
   const container = document.getElementById('historyList');
+  // Save type filter
   if (historyFilter !== 'all') items = items.filter(h => h.saveType === historyFilter);
+  // Date range filter
+  if (historyDateFrom) items = items.filter(h => (h.date || '') >= historyDateFrom);
+  if (historyDateTo)   items = items.filter(h => (h.date || '') <= historyDateTo);
+  // Hashtag filter
+  if (historyTagFilter) items = items.filter(h =>
+    extractHashtags((h.text || '') + ' ' + (h.title || '')).includes(historyTagFilter)
+  );
   if (items.length === 0) {
-    const msg = historyFilter === 'all' ? '还没有写作记录' : (historyFilter === 'manual' ? '还没有手动保存的记录' : '还没有自动保存的记录');
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128218;</div><div class="empty-state-text">${msg}</div><div class="empty-state-sub">开始今天的写作，记录会自动保存在这里</div></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128218;</div><div class="empty-state-text">没有符合条件的记录</div><div class="empty-state-sub">试试调整筛选条件</div></div>`;
     return;
   }
   container.innerHTML = items.map(entry => {
@@ -1845,6 +1936,8 @@ function renderHistory() {
     const d = entry.updatedAt instanceof Date ? entry.updatedAt : (entry.updatedAt?.toDate ? entry.updatedAt.toDate() : null);
     const timeStr = d ? ` ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : '';
     const titleStr = entry.title ? `<span style="font-weight:600;margin-right:6px;">${escapeHTML(entry.title)}</span> · ` : '';
+    const tags = extractHashtags((entry.text || '') + ' ' + (entry.title || ''));
+    const tagsHTML = tags.length ? `<div class="card-tags">${tags.map(t => `<span class="card-tag">${escapeHTML(t)}</span>`).join('')}</div>` : '';
     return `<div class="history-item">
       <div class="history-item-row">
         <div class="history-item-content" onclick="openDetail('${entry._docId}')">
@@ -1858,6 +1951,7 @@ function renderHistory() {
             </div>
           </div>
           <div class="history-preview">${escapeHTML(preview)}...</div>
+          ${tagsHTML}
         </div>
         <div class="history-item-actions">
           <button class="history-delete-btn" onclick="event.stopPropagation();deleteHistoryInline('${entry._docId}',this)">删除</button>
@@ -2329,7 +2423,9 @@ async function initApp() {
   updateWordCount();
   updateIdeasBadge();
   updateResearchBadge();
+  updateHistoryBadge();
   renderIdeas();
+  renderHashtagCloud();
   renderStatsSidebar();
 }
 
