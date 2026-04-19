@@ -1969,7 +1969,6 @@ function toggleQuickIdea() {
   btn.classList.toggle('active', isOpen);
   if (isOpen) {
     document.getElementById('quickIdeaInput').focus();
-    renderQuickIdeaRecent();
     renderCatPicker('quickIdeaCatPicker', _quickIdeaCats, 'toggleQuickIdeaCat');
   } else {
     document.getElementById('editor').focus();
@@ -1995,7 +1994,6 @@ async function addQuickIdea() {
   input.placeholder = '已保存！继续记录...';
   setTimeout(() => { input.placeholder = '灵感稍纵即逝，快记下来...'; }, 1200);
   updateIdeasBadge();
-  renderQuickIdeaRecent();
   renderIdeas();
 }
 
