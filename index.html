@@ -799,6 +799,143 @@
     .slider-toc { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border-light); max-height: 160px; }
   }
 
+  /* ===== Streak / Stats Card ===== */
+  .streak-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 20px 24px;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 16px;
+  }
+
+  .streak-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .streak-title {
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .streak-year {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    background: var(--surface-hover);
+    padding: 3px 10px;
+    border-radius: 99px;
+    border: 1px solid var(--border);
+  }
+
+  .streak-stats {
+    display: flex;
+    gap: 0;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .streak-stat {
+    flex: 1;
+    text-align: center;
+    padding: 16px 12px;
+    background: var(--surface);
+    transition: background var(--transition);
+  }
+
+  .streak-stat:not(:last-child) { border-right: 1px solid var(--border); }
+  .streak-stat:hover { background: var(--accent-light); }
+
+  .streak-stat-value {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    margin-bottom: 2px;
+  }
+
+  .streak-stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .calendar-wrap { overflow-x: auto; padding-bottom: 2px; }
+
+  .calendar-grid { display: flex; gap: 3px; }
+  .calendar-week { display: flex; flex-direction: column; gap: 3px; }
+
+  .calendar-day {
+    width: 13px; height: 13px;
+    border-radius: 3px;
+    background: var(--border-light);
+    transition: all var(--transition);
+    cursor: default;
+    position: relative;
+  }
+  .calendar-day:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .calendar-day.future { background: transparent; border: 1px dashed var(--border); opacity: 0.3; }
+  .calendar-day.level-1 { background: #d4e8d0; }
+  .calendar-day.level-2 { background: #a3d49a; }
+  .calendar-day.level-3 { background: #6bba62; }
+  .calendar-day.level-4 { background: #2D5A27; }
+
+  .calendar-day[data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-primary); color: white;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none;
+  }
+  .calendar-day[data-tooltip]:hover::before {
+    content: '';
+    position: absolute; bottom: calc(100% + 2px); left: 50%;
+    transform: translateX(-50%);
+    border: 4px solid transparent; border-top-color: var(--text-primary);
+    z-index: 10; pointer-events: none;
+  }
+
+  .calendar-months {
+    display: flex; font-size: 10px; color: var(--text-tertiary);
+    margin-bottom: 4px; gap: 0;
+  }
+  .calendar-month-label { font-weight: 500; }
+
+  .calendar-container { display: flex; gap: 4px; }
+
+  .calendar-dow {
+    display: flex; flex-direction: column; gap: 3px;
+    font-size: 9px; color: var(--text-tertiary);
+  }
+  .calendar-dow span { height: 13px; display: flex; align-items: center; }
+
+  .calendar-legend {
+    display: flex; align-items: center; gap: 3px;
+    margin-top: 10px; justify-content: flex-end;
+    font-size: 10px; color: var(--text-tertiary);
+  }
+  .legend-box { width: 11px; height: 11px; border-radius: 2px; }
+
+  @media (max-width: 600px) {
+    .streak-stat-value { font-size: 22px; }
+    .calendar-day { width: 10px; height: 10px; }
+    .streak-stats { flex-direction: column; }
+    .streak-stat:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+
   /* ===== Export Modal ===== */
   .export-overlay {
     display: none; position: fixed; inset: 0;
@@ -948,6 +1085,47 @@
   <!-- ==================== TODAY'S WRITING ==================== -->
   <div class="view active" id="view-write">
     <div class="write-top">
+
+    <!-- Streak Card -->
+    <div class="streak-card" id="streakCard">
+      <div class="streak-header">
+        <span class="streak-title">&#128200; 写作统计</span>
+        <span class="streak-year" id="streakYear">2026年</span>
+      </div>
+      <div class="streak-stats">
+        <div class="streak-stat">
+          <div class="streak-stat-value" id="statTotalWords">0</div>
+          <div class="streak-stat-label">总字数</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-stat-value" id="statWritingDays">0</div>
+          <div class="streak-stat-label">写作天数</div>
+        </div>
+        <div class="streak-stat">
+          <div class="streak-stat-value"><span id="statStreak">0</span> <span style="font-size:16px;vertical-align:middle;">&#128293;</span></div>
+          <div class="streak-stat-label">连续写作</div>
+        </div>
+      </div>
+      <div class="calendar-wrap">
+        <div class="calendar-months" id="calendarMonths"></div>
+        <div class="calendar-container">
+          <div class="calendar-dow">
+            <span>&nbsp;</span><span>一</span><span>&nbsp;</span><span>三</span><span>&nbsp;</span><span>五</span><span>&nbsp;</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+      </div>
+      <div class="calendar-legend">
+        <span>少</span>
+        <div class="legend-box" style="background:var(--border-light);"></div>
+        <div class="legend-box" style="background:#d4e8d0;"></div>
+        <div class="legend-box" style="background:#a3d49a;"></div>
+        <div class="legend-box" style="background:#6bba62;"></div>
+        <div class="legend-box" style="background:#2D5A27;"></div>
+        <span>多</span>
+      </div>
+    </div>
+
     <div class="writing-stats">
       <div class="stat-card timer-card" id="timerCard">
         <div class="stat-label">写作时长</div>
@@ -1473,6 +1651,9 @@ async function saveToHistory(text, html, title, saveType) {
     const docId = await fsAdd('history', { date, title, text, html, wordCount: wc, timerSeconds, saveType: 'manual' });
     historyCache.unshift({ _docId: docId, date, title, text, html, wordCount: wc, timerSeconds, saveType: 'manual' });
   }
+
+  // Update streak stats after each save
+  if (typeof renderStreakStats === 'function') renderStreakStats();
 }
 
 // ===== Editor events =====
@@ -2241,6 +2422,145 @@ async function initApp() {
   updateIdeasBadge();
   updateResearchBadge();
   renderIdeas();
+
+  // Render streak stats
+  renderStreakStats();
+}
+
+// ===== Streak / Calendar Stats =====
+function renderStreakStats() {
+  const year = new Date().getFullYear();
+  document.getElementById('streakYear').textContent = year + '年';
+
+  // Build a map: date -> total word count (aggregate all history entries per day)
+  const dayMap = {};
+  historyCache.forEach(entry => {
+    const date = entry.date;
+    if (!date || !date.startsWith(String(year))) return;
+    const wc = entry.wordCount || 0;
+    // Use max word count per day (manual save is usually the best snapshot)
+    if (!dayMap[date] || wc > dayMap[date]) {
+      dayMap[date] = wc;
+    }
+  });
+
+  // Total words this year
+  let totalWords = 0;
+  Object.values(dayMap).forEach(wc => totalWords += wc);
+
+  // Writing days
+  const writingDays = Object.keys(dayMap).length;
+
+  // Current streak (consecutive days ending today or yesterday)
+  let streak = 0;
+  const today = new Date();
+  let checkDate = new Date(today);
+  // Check if today has data; if not, start from yesterday
+  const todayStr = todayKey();
+  if (!dayMap[todayStr]) {
+    checkDate.setDate(checkDate.getDate() - 1);
+  }
+  while (true) {
+    const key = `${checkDate.getFullYear()}-${String(checkDate.getMonth()+1).padStart(2,'0')}-${String(checkDate.getDate()).padStart(2,'0')}`;
+    if (dayMap[key] && dayMap[key] > 0) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // Update stats display
+  document.getElementById('statTotalWords').textContent = totalWords.toLocaleString('zh-CN');
+  document.getElementById('statWritingDays').textContent = writingDays;
+  document.getElementById('statStreak').textContent = streak;
+
+  // Render calendar heatmap
+  renderCalendar(dayMap, year);
+}
+
+function renderCalendar(dayMap, year) {
+  const grid = document.getElementById('calendarGrid');
+  const monthsRow = document.getElementById('calendarMonths');
+  const today = new Date();
+
+  // Start from Jan 1st
+  const startDate = new Date(year, 0, 1);
+  const startDay = startDate.getDay();
+  const adjustedStart = new Date(startDate);
+  adjustedStart.setDate(adjustedStart.getDate() - ((startDay + 6) % 7));
+
+  const endDate = new Date(year, 11, 31);
+
+  let currentDate = new Date(adjustedStart);
+  let weekHtml = '';
+  let weeksHtml = '';
+  let monthPositions = [];
+  let currentMonth = -1;
+  let weekCount = 0;
+
+  while (currentDate <= endDate || currentDate.getDay() !== 1) {
+    const dow = currentDate.getDay();
+    const isMonday = dow === 1;
+
+    if (isMonday || currentDate.getTime() === adjustedStart.getTime()) {
+      if (weekHtml) {
+        weeksHtml += '<div class="calendar-week">' + weekHtml + '</div>';
+        weekCount++;
+      }
+      weekHtml = '';
+
+      if (currentDate.getMonth() !== currentMonth && currentDate.getFullYear() === year) {
+        currentMonth = currentDate.getMonth();
+        monthPositions.push({ month: currentMonth, week: weekCount });
+      }
+    }
+
+    const key = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(currentDate.getDate()).padStart(2,'0')}`;
+    const words = dayMap[key] || 0;
+    const isFuture = currentDate > today;
+    const isThisYear = currentDate.getFullYear() === year;
+
+    let level = '';
+    if (isFuture) {
+      level = 'future';
+    } else if (words > 0) {
+      if (words >= 1000) level = 'level-4';
+      else if (words >= 500) level = 'level-3';
+      else if (words >= 200) level = 'level-2';
+      else level = 'level-1';
+    }
+
+    const tooltip = isFuture ? '' :
+      (words > 0 ? `${currentDate.getMonth()+1}月${currentDate.getDate()}日: ${words} 字` :
+       `${currentDate.getMonth()+1}月${currentDate.getDate()}日: 未写作`);
+
+    if (isThisYear || currentDate < startDate) {
+      weekHtml += '<div class="calendar-day ' + level + '" ' + (tooltip ? 'data-tooltip="' + tooltip + '"' : '') + '></div>';
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
+    if (currentDate > endDate && currentDate.getDay() === 1) break;
+  }
+
+  if (weekHtml) {
+    weeksHtml += '<div class="calendar-week">' + weekHtml + '</div>';
+    weekCount++;
+  }
+
+  grid.innerHTML = weeksHtml;
+
+  // Month labels
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const dayWidth = 16;
+  let monthsHtml = '<span style="width:20px;flex-shrink:0;"></span>';
+  for (let i = 0; i < monthPositions.length; i++) {
+    const pos = monthPositions[i];
+    const nextPos = monthPositions[i + 1];
+    const width = nextPos ? (nextPos.week - pos.week) * dayWidth : (weekCount - pos.week) * dayWidth;
+    monthsHtml += '<span class="calendar-month-label" style="width:' + width + 'px;">' + monthNames[pos.month] + '</span>';
+  }
+  monthsRow.innerHTML = monthsHtml;
 }
 </script>
 </body>
