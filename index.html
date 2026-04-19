@@ -111,925 +111,1371 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ===== User Bar ===== */
-  .user-bar {
-    display: flex; align-items: center; gap: 10px;
-  }
-
-  .user-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    border: 1px solid var(--border);
-  }
-
-  .user-name { font-size: 13px; color: var(--text-secondary); }
-
-  .btn-logout {
-    padding: 4px 10px; border: 1px solid var(--border);
-    border-radius: 6px; background: transparent;
-    font-size: 12px; color: var(--text-tertiary);
-    cursor: pointer; transition: all var(--transition);
-  }
-  .btn-logout:hover { color: var(--red); border-color: var(--red); background: var(--red-light); }
-
-  .btn-export {
-    padding: 6px 12px; border: 1px solid var(--accent);
-    border-radius: 6px; background: var(--accent-light);
-    font-size: 12px; font-weight: 500; color: var(--accent);
-    cursor: pointer; transition: all var(--transition);
-    display: inline-flex; align-items: center; gap: 4px;
-  }
-  .btn-export:hover { background: var(--accent); color: white; }
-
-  /* ===== App Shell ===== */
-  .app {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 32px 24px 80px;
-    transition: max-width 0.35s ease, padding 0.35s ease;
+  /* ===== App Layout ===== */
+  .app-layout {
     display: none;
+    min-height: 100vh;
+    flex-direction: row;
   }
+  .app-layout.visible { display: flex; }
 
-  .app.visible { display: block; }
-
-  .app.split-mode {
-    max-width: 100%;
-    padding: 24px 32px 80px;
-  }
-
-  /* ===== Header ===== */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 28px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    color: white; font-size: 18px;
-  }
-
-  .logo h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-  .header-date { font-size: 14px; color: var(--text-secondary); }
-
-  /* ===== Navigation ===== */
-  .nav-tabs {
-    display: flex; gap: 4px;
+  /* ===== Sidebar ===== */
+  .app-sidebar {
+    width: 240px;
+    min-width: 240px;
+    border-right: 1px solid var(--border);
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 4px;
-    margin-bottom: 24px;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .nav-tab {
-    flex: 1;
-    padding: 10px 16px;
-    border: none; background: transparent;
-    border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 500;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: all var(--transition);
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-  }
-
-  .nav-tab:hover { color: var(--text-primary); background: var(--surface-hover); }
-  .nav-tab.active { background: var(--accent); color: white; box-shadow: var(--shadow-sm); }
-
-  .nav-tab .badge {
-    background: rgba(255,255,255,0.25);
-    font-size: 11px; padding: 1px 7px;
-    border-radius: 99px; font-weight: 600;
-  }
-  .nav-tab:not(.active) .badge { background: var(--border); color: var(--text-secondary); }
-
-  /* ===== Views ===== */
-  .view { display: none; }
-  .view.active { display: flex; flex-direction: column; animation: fadeIn 0.25s ease; }
-  #view-write.active {
-    height: calc(100vh - 140px);
-    overflow: hidden;
-  }
-  #view-ideas.active, #view-research.active, #view-history.active {
-    display: block;
-  }
-
-  .write-top { flex-shrink: 0; }
-
-  .split-container { flex: 1; min-height: 0; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* ===== Split Layout ===== */
-  .split-container {
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    overflow-y: auto;
+    padding: 20px 16px;
     display: flex;
+    flex-direction: column;
     gap: 20px;
   }
 
-  .split-left {
-    flex: 1;
-    min-width: 0;
-    display: flex; flex-direction: column;
-    transition: flex 0.35s ease;
-  }
-
-  .split-left .editor-wrap { flex: 1; min-height: 0; }
-
-  .split-right {
-    flex: 0;
-    min-width: 0;
-    overflow: hidden;
-    opacity: 0;
-    display: flex; flex-direction: column;
-    transition: flex 0.35s ease, opacity 0.3s ease;
-  }
-
-  .split-right .editor-wrap { flex: 1; min-height: 0; }
-
-  .split-mode .split-left { flex: 1; }
-  .split-mode .split-right { flex: 1; opacity: 1; }
-
-  /* ===== Stats ===== */
-  .writing-stats { display: flex; gap: 12px; margin-bottom: 16px; }
-
-  .stat-card {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 14px 16px;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .stat-label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
-  .stat-value { font-size: 26px; font-weight: 700; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
-  .stat-sub { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
-
-  .timer-card.running .stat-value { color: var(--accent); }
-  .words-card.excellent .stat-value { color: var(--accent); }
-  .words-card.excellent .stat-sub { color: var(--accent); }
-
-  /* Progress */
-  .progress-wrap { margin-bottom: 16px; }
-  .progress-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
-  .progress-label { font-size: 13px; color: var(--text-secondary); }
-  .progress-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.5s ease; width: 0%; }
-
-  /* Controls */
-  .timer-controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-
-  .btn {
-    padding: 10px 20px; border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px; font-weight: 500;
-    cursor: pointer; transition: all var(--transition);
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: var(--accent-hover); }
-  .btn-secondary { background: var(--surface); color: var(--text-secondary); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: var(--surface-hover); color: var(--text-primary); }
-  .btn-danger { background: var(--red-light); color: var(--red); border: 1px solid transparent; }
-  .btn-danger:hover { background: #f9d4d4; }
-
-  .quick-idea-trigger {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 14px;
-    background: var(--orange-light); color: var(--orange);
-    border: 1px solid transparent; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition);
-  }
-  .quick-idea-trigger:hover { background: #FFE8CC; }
-  .quick-idea-trigger.active { background: #FFE0B8; border-color: var(--orange); }
-
-  .research-toggle {
-    display: flex; align-items: center; gap: 6px;
-    padding: 8px 14px;
-    background: var(--blue-light); color: var(--blue);
-    border: 1px solid transparent; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition);
-  }
-  .research-toggle:hover { background: #D4E2F2; }
-  .research-toggle.active { background: #C4D8EE; border-color: var(--blue); }
-
-  /* ===== Quick Idea Panel ===== */
-  .quick-idea-panel {
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.2s ease, margin 0.3s ease;
-    opacity: 0; margin-bottom: 0;
-  }
-  .quick-idea-panel.open { max-height: 300px; opacity: 1; margin-bottom: 16px; }
-
-  .quick-idea-inner {
-    background: var(--surface);
-    border: 1px solid var(--orange);
-    border-radius: var(--radius-md);
-    padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-
-  .quick-idea-header { display: flex; justify-content: space-between; align-items: center; }
-  .quick-idea-label { font-size: 13px; font-weight: 600; color: var(--orange); display: flex; align-items: center; gap: 5px; }
-
-  .panel-close {
-    background: none; border: none; color: var(--text-tertiary);
-    cursor: pointer; font-size: 14px; padding: 2px 6px;
-    border-radius: 4px; transition: all var(--transition);
-  }
-  .panel-close:hover { color: var(--text-primary); background: var(--surface-hover); }
-
-  .quick-idea-row { display: flex; gap: 8px; align-items: stretch; }
-
-  textarea.quick-idea-input, .quick-idea-input {
-    flex: 1; padding: 10px 12px;
-    border: 1px solid var(--border); border-radius: 6px;
-    font-size: 14px; font-family: inherit;
-    background: var(--bg); color: var(--text-primary);
-    outline: none; resize: vertical; min-height: 60px; line-height: 1.5;
-    transition: border-color var(--transition), box-shadow var(--transition);
-  }
-  .quick-idea-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(196,102,10,0.1); }
-  .quick-idea-input::placeholder { color: var(--text-tertiary); }
-
-  .btn-orange {
-    background: var(--orange); color: white;
-    padding: 10px 16px; border: none; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition); white-space: nowrap;
-  }
-  .btn-orange:hover { background: #A8560A; }
-
-  .quick-idea-recent { display: flex; flex-wrap: wrap; gap: 6px; }
-  .quick-idea-chip {
-    font-size: 12px; padding: 4px 10px;
-    background: var(--orange-light); color: var(--orange);
-    border-radius: 99px;
-    max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
-  .kbd-hint { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px; }
-  kbd {
-    background: var(--surface-hover); border: 1px solid var(--border);
-    border-radius: 4px; padding: 1px 5px; font-size: 11px; font-family: inherit;
-  }
-
-  /* ===== Editor (shared) ===== */
-  .editor-wrap {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    transition: box-shadow var(--transition), border-color var(--transition);
-    display: flex; flex-direction: column;
-  }
-
-  .editor-wrap:focus-within {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-light), var(--shadow-md);
-  }
-
-  .editor-wrap.research-editor:focus-within {
-    border-color: var(--blue);
-    box-shadow: 0 0 0 3px var(--blue-light), var(--shadow-md);
-  }
-
-  .editor-toolbar {
-    display: flex; align-items: center; gap: 2px;
-    padding: 6px 14px;
-    border-bottom: 1px solid var(--border-light);
-    background: var(--surface-hover);
-    flex-wrap: wrap; flex-shrink: 0;
-  }
-
-  .toolbar-btn {
-    padding: 4px 8px; border: 1px solid transparent;
-    border-radius: 6px; background: transparent;
-    color: var(--text-secondary);
-    font-size: 13px; font-weight: 600; font-family: inherit;
-    cursor: pointer; transition: all var(--transition); line-height: 1.2;
-  }
-
-  .toolbar-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text-primary); }
-  .toolbar-btn.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent-light); }
-
-  .research-editor .toolbar-btn.active { background: var(--blue-light); color: var(--blue); border-color: var(--blue-light); }
-
-  .toolbar-divider { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
-
-  .toolbar-btn.h1 { font-size: 15px; }
-  .toolbar-btn.h2 { font-size: 14px; }
-  .toolbar-btn.p-btn { font-weight: 400; }
-
-  .rich-editor {
-    width: 100%;
-    padding: 20px;
-    border: none; outline: none;
-    font-size: 16px; line-height: 1.8;
-    color: var(--text-primary);
-    background: transparent;
-    overflow-y: auto; font-family: inherit;
-    flex: 1; min-height: 0;
-  }
-
-  .rich-editor:empty::before {
-    content: attr(data-placeholder);
-    color: var(--text-tertiary);
-    pointer-events: none;
-  }
-
-  .rich-editor h1 { font-size: 28px; font-weight: 700; line-height: 1.3; margin: 16px 0 8px; letter-spacing: -0.5px; }
-  .rich-editor h2 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 14px 0 6px; letter-spacing: -0.3px; }
-  .rich-editor h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin: 12px 0 6px; }
-  .rich-editor h4 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 10px 0 4px; }
-  .rich-editor h5 { font-size: 16px; font-weight: 600; line-height: 1.5; margin: 8px 0 4px; }
-  .rich-editor h6 { font-size: 14px; font-weight: 600; line-height: 1.5; margin: 8px 0 4px; color: var(--text-secondary); }
-  .rich-editor p { margin: 0 0 8px; }
-
-  .editor-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 20px;
-    border-top: 1px solid var(--border-light);
-    background: var(--surface-hover);
-    flex-shrink: 0;
-  }
-
-  .editor-hint { font-size: 12px; color: var(--text-tertiary); }
-  .save-indicator {
-    font-size: 12px; color: var(--text-tertiary);
-    display: flex; align-items: center; gap: 4px;
-    opacity: 0; transition: opacity var(--transition);
-  }
-  .save-indicator.show { opacity: 1; }
-
-  /* ===== Research Panel (right side) ===== */
-  .research-panel-header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 12px;
-  }
-
-  .research-panel-title {
-    font-size: 16px; font-weight: 600; color: var(--blue);
-    display: flex; align-items: center; gap: 6px;
-  }
-
-  .research-panel-actions { display: flex; gap: 8px; align-items: center; }
-
-  .btn-blue {
-    background: var(--blue); color: white;
-    padding: 8px 16px; border: none; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition);
-  }
-  .btn-blue:hover { background: #1E4A75; }
-
-  .btn-blue-outline {
-    background: transparent; color: var(--blue);
-    padding: 8px 16px; border: 1px solid var(--blue); border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition);
-  }
-  .btn-blue-outline:hover { background: var(--blue-light); }
-
-  .research-title-input {
-    width: 100%; padding: 10px 14px;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-size: 15px; font-weight: 600; font-family: inherit;
-    background: var(--surface); color: var(--text-primary);
-    outline: none; margin-bottom: 10px;
-    transition: border-color var(--transition), box-shadow var(--transition);
-  }
-  .research-title-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(45,90,138,0.1); }
-  .research-title-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
-
-  .research-panel-header { flex-shrink: 0; }
-  .split-right .research-title-input { flex-shrink: 0; }
-
-  /* ===== Ideas View ===== */
-  .idea-input-wrap { display: flex; gap: 8px; margin-bottom: 24px; }
-
-  .idea-input {
-    flex: 1; padding: 12px 16px;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    font-size: 15px; font-family: inherit;
-    background: var(--surface); color: var(--text-primary);
-    outline: none; transition: border-color var(--transition), box-shadow var(--transition);
-  }
-  .idea-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
-  .idea-input::placeholder { color: var(--text-tertiary); }
-
-  .ideas-list { display: flex; flex-direction: column; gap: 8px; }
-
-  .idea-item {
-    background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 14px 18px;
-    display: flex; align-items: flex-start; gap: 12px;
-    box-shadow: var(--shadow-sm); transition: all var(--transition);
-  }
-  .idea-item:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
-
-  .idea-bullet { width: 8px; height: 8px; min-width: 8px; background: var(--orange); border-radius: 50%; margin-top: 7px; }
-  .idea-content { flex: 1; }
-  .idea-text { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
-  .idea-meta { font-size: 12px; color: var(--text-tertiary); }
-
-  .idea-delete {
-    background: none; border: none; color: var(--text-tertiary);
-    cursor: pointer; padding: 4px; border-radius: 4px;
-    font-size: 16px; line-height: 1; transition: all var(--transition); opacity: 0;
-  }
-  .idea-item:hover .idea-delete { opacity: 1; }
-  .idea-delete:hover { color: var(--red); background: var(--red-light); }
-
-  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); }
-  .empty-state-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.5; }
-  .empty-state-text { font-size: 15px; margin-bottom: 4px; color: var(--text-secondary); }
-  .empty-state-sub { font-size: 13px; }
-
-  /* ===== Research Tab View ===== */
-  .research-tab-input {
-    background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 18px; margin-bottom: 20px; box-shadow: var(--shadow-sm);
-  }
-
-  .research-tab-input .research-title-input { margin-bottom: 12px; }
-
-  .research-tab-body {
-    width: 100%; padding: 10px 0; border: none; outline: none;
-    font-size: 15px; font-family: inherit; color: var(--text-primary);
-    background: transparent; resize: vertical; min-height: 100px; line-height: 1.7;
-  }
-  .research-tab-body::placeholder { color: var(--text-tertiary); }
-
-  .research-tab-actions {
-    display: flex; justify-content: flex-end;
-    margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-light);
-  }
-
-  .research-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .research-item {
-    background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    overflow: hidden; box-shadow: var(--shadow-sm); transition: all var(--transition);
-  }
-  .research-item:hover { border-color: var(--blue); box-shadow: var(--shadow-md); }
-
-  .research-item-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 14px 18px; cursor: pointer;
-  }
-
-  .research-item-title {
-    font-size: 15px; font-weight: 600; color: var(--text-primary);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .research-item-title::before {
-    content: ''; width: 8px; height: 8px; min-width: 8px;
-    background: var(--blue); border-radius: 50%;
-  }
-
-  .research-item-meta { font-size: 12px; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px; }
-
-  .research-item-body {
-    padding: 0 18px 16px 34px;
-    font-size: 14px; line-height: 1.7; color: var(--text-secondary);
-    white-space: pre-wrap; display: none;
-  }
-  .research-item.expanded .research-item-body { display: block; }
-
-  .research-item-delete {
-    background: none; border: none; color: var(--text-tertiary);
-    cursor: pointer; padding: 4px; border-radius: 4px; font-size: 14px;
-    transition: all var(--transition); opacity: 0;
-  }
-  .research-item:hover .research-item-delete { opacity: 1; }
-  .research-item-delete:hover { color: var(--red); background: var(--red-light); }
-
-  /* ===== History ===== */
-  .history-list { display: flex; flex-direction: column; gap: 10px; }
-
-  .history-item {
-    background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius-md);
-    padding: 18px 20px;
-    box-shadow: var(--shadow-sm); cursor: pointer;
-    transition: all var(--transition);
-  }
-  .history-item:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-1px); }
-
-  .history-item-row { display: flex; align-items: flex-start; gap: 8px; }
-  .history-item-content { flex: 1; min-width: 0; }
-  .history-item-actions { flex-shrink: 0; display: flex; align-items: center; opacity: 0; transition: opacity var(--transition); }
-  .history-item:hover .history-item-actions { opacity: 1; }
-  .history-delete-btn {
-    background: none; border: 1px solid transparent; color: var(--text-tertiary);
-    cursor: pointer; padding: 6px 10px; border-radius: var(--radius-sm);
-    font-size: 12px; font-weight: 500; transition: all var(--transition);
-    white-space: nowrap;
-  }
-  .history-delete-btn:hover { color: var(--red); background: var(--red-light); border-color: var(--red-light); }
-  .history-delete-btn.confirming { color: var(--red); background: var(--red-light); border-color: var(--red); font-weight: 600; }
-
-  .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .history-date { font-size: 15px; font-weight: 600; }
-  .history-badges { display: flex; gap: 6px; }
-  .history-badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 500; }
-  .badge-words { background: var(--accent-light); color: var(--accent); }
-  .badge-time { background: var(--orange-light); color: var(--orange); }
-  .badge-excellent { background: var(--accent); color: white; }
-  .badge-auto { background: var(--border); color: var(--text-tertiary); }
-  .badge-manual { background: var(--blue-light); color: var(--blue); }
-
-  /* Manual save button */
-  .btn-save-manual {
-    background: var(--accent); color: white;
-    padding: 8px 14px; border: none; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 500; cursor: pointer;
-    transition: all var(--transition);
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn-save-manual:hover { background: var(--accent-hover); }
-
-  /* Writing title input */
-  .writing-title-input {
-    width: 100%; padding: 10px 20px;
-    border: none; border-bottom: 1px solid var(--border-light);
-    font-size: 20px; font-weight: 700; font-family: inherit;
-    background: transparent; color: var(--text-primary);
-    outline: none; letter-spacing: -0.3px;
-    transition: border-color var(--transition);
-    flex-shrink: 0;
-  }
-  .writing-title-input:focus { border-color: var(--accent); }
-  .writing-title-input::placeholder { color: var(--text-tertiary); font-weight: 400; }
-
-  /* History filter */
-  .history-filter {
-    display: flex; gap: 6px; margin-bottom: 16px;
-  }
-
-  .filter-btn {
-    padding: 6px 14px; border: 1px solid var(--border);
-    border-radius: 99px; background: var(--surface);
-    font-size: 13px; font-weight: 500; color: var(--text-secondary);
-    cursor: pointer; transition: all var(--transition);
-  }
-  .filter-btn:hover { border-color: var(--accent); color: var(--text-primary); }
-  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-
-  .history-preview {
-    font-size: 14px; color: var(--text-secondary); line-height: 1.5;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-
-  /* ===== Slider Panel ===== */
-  .slider-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.2); backdrop-filter: blur(2px);
-    z-index: 100;
-    transition: opacity 0.3s ease;
-  }
-  .slider-overlay.active { display: block; }
-
-  .slider-panel {
-    position: fixed; top: 0; right: 0; bottom: 0;
-    width: 80vw; max-width: 960px; min-width: 400px;
-    background: var(--surface);
-    box-shadow: -8px 0 32px rgba(0,0,0,0.12);
-    z-index: 101;
-    display: flex; flex-direction: column;
-    transform: translateX(100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .slider-panel.open { transform: translateX(0); }
-
-  .slider-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 20px 24px; border-bottom: 1px solid var(--border-light);
-    flex-shrink: 0;
-  }
-  .slider-title { font-size: 17px; font-weight: 600; }
-  .slider-close {
-    background: none; border: none; font-size: 20px; color: var(--text-tertiary);
-    cursor: pointer; padding: 4px 8px; border-radius: var(--radius-sm);
-    transition: all var(--transition);
-  }
-  .slider-close:hover { background: var(--surface-hover); color: var(--text-primary); }
-
-  .slider-content {
-    flex: 1; min-height: 0;
-    display: flex;
-  }
-
-  .slider-toc {
-    width: 220px; min-width: 180px; flex-shrink: 0;
-    padding: 20px 16px;
-    border-right: 1px solid var(--border-light);
-    overflow-y: auto;
-    background: var(--bg);
-  }
-  .slider-toc.empty { display: none; }
-  .slider-toc.empty + .slider-body { border-left: none; }
-  .toc-label { font-size: 12px; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 600; }
-  .toc-list { list-style: none; }
-  .toc-item {
-    padding: 5px 8px; margin-bottom: 2px; font-size: 13px; color: var(--text-secondary);
-    cursor: pointer; transition: all var(--transition);
-    display: flex; align-items: baseline; gap: 6px;
-    border-radius: 6px;
-    line-height: 1.4;
-  }
-  .toc-item:hover { color: var(--accent); background: var(--accent-light); }
-  .toc-item .toc-tag {
-    font-size: 10px; font-weight: 700; color: var(--text-tertiary);
-    min-width: 20px; flex-shrink: 0;
-  }
-  .toc-item .toc-text {
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-  .toc-item.toc-h1 .toc-text { font-weight: 600; }
-  .toc-item.toc-h2 { padding-left: 20px; }
-  .toc-item.toc-h3 { padding-left: 32px; font-size: 12px; }
-  .toc-item.toc-h4 { padding-left: 40px; font-size: 12px; }
-  .toc-item.toc-h5 { padding-left: 48px; font-size: 12px; }
-  .toc-item.toc-h6 { padding-left: 56px; font-size: 12px; }
-
-  .slider-body {
-    padding: 28px 32px; overflow-y: auto; flex: 1; min-height: 0;
-    font-size: 16px; line-height: 1.8; color: var(--text-primary);
-  }
-  .slider-body h1 { font-size: 28px; font-weight: 700; line-height: 1.3; margin: 16px 0 8px; letter-spacing: -0.5px; }
-  .slider-body h2 { font-size: 24px; font-weight: 700; line-height: 1.3; margin: 14px 0 6px; letter-spacing: -0.3px; }
-  .slider-body h3 { font-size: 20px; font-weight: 600; line-height: 1.4; margin: 12px 0 6px; }
-  .slider-body h4 { font-size: 18px; font-weight: 600; line-height: 1.4; margin: 10px 0 4px; }
-  .slider-body h5 { font-size: 16px; font-weight: 600; line-height: 1.5; margin: 8px 0 4px; }
-  .slider-body h6 { font-size: 14px; font-weight: 600; line-height: 1.5; margin: 8px 0 4px; color: var(--text-secondary); }
-  .slider-body p { margin: 0 0 8px; }
-
-  .slider-footer {
-    padding: 16px 24px; border-top: 1px solid var(--border-light);
-    display: flex; justify-content: flex-end; gap: 8px;
-    flex-shrink: 0;
-  }
-
-  @media (max-width: 600px) {
-    .slider-panel { width: 100vw; min-width: unset; }
-    .slider-content { flex-direction: column; }
-    .slider-toc { width: 100%; min-width: unset; border-right: none; border-bottom: 1px solid var(--border-light); max-height: 160px; }
-  }
-
-  /* ===== Streak / Stats Card ===== */
-  .streak-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px 24px;
-    box-shadow: var(--shadow-sm);
-    margin-bottom: 16px;
-  }
-
-  .streak-header {
+  .sidebar-logo {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 8px;
   }
 
-  .streak-title {
-    font-size: 15px;
+  .sidebar-logo-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-text {
+    font-size: 16px;
     font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    color: var(--text-primary);
   }
 
-  .streak-year {
-    font-size: 12px;
-    color: var(--text-tertiary);
-    font-weight: 500;
-    background: var(--surface-hover);
-    padding: 3px 10px;
-    border-radius: 99px;
+  /* Sidebar User Section */
+  .sidebar-user {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+  }
+
+  .sidebar-user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .sidebar-user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .sidebar-user-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sidebar-user-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .sidebar-user-email {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .btn-logout {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition);
+    width: 100%;
+  }
+  .btn-logout:hover { color: var(--red); border-color: var(--red); background: var(--red-light); }
+
+  /* Streak Stats Section */
+  .streak-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
   .streak-stats {
     display: flex;
-    gap: 0;
-    margin-bottom: 18px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    overflow: hidden;
+    flex-direction: column;
+    gap: 8px;
   }
 
-  .streak-stat {
-    flex: 1;
-    text-align: center;
-    padding: 16px 12px;
-    background: var(--surface);
-    transition: background var(--transition);
+  .streak-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-light);
   }
 
-  .streak-stat:not(:last-child) { border-right: 1px solid var(--border); }
-  .streak-stat:hover { background: var(--accent-light); }
-
-  .streak-stat-value {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    color: var(--accent);
-    font-variant-numeric: tabular-nums;
-    line-height: 1.1;
-    margin-bottom: 2px;
+  .streak-stat-row:last-child {
+    border-bottom: none;
   }
 
   .streak-stat-label {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--text-secondary);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
   }
 
-  .calendar-wrap { overflow-x: auto; padding-bottom: 2px; }
+  .streak-stat-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--accent);
+  }
 
-  .calendar-grid { display: flex; gap: 3px; }
-  .calendar-week { display: flex; flex-direction: column; gap: 3px; }
+  /* Calendar Section */
+  .calendar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+  }
+
+  .calendar-header {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .calendar-months {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 4px;
+    font-size: 9px;
+    color: var(--text-tertiary);
+    overflow-x: auto;
+  }
+
+  .calendar-month-label {
+    flex-shrink: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .calendar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .calendar-dow {
+    display: flex;
+    gap: 2px;
+    font-size: 9px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .calendar-dow span {
+    width: 12px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .calendar-week {
+    display: flex;
+    gap: 2px;
+  }
 
   .calendar-day {
-    width: 13px; height: 13px;
-    border-radius: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
     background: var(--border-light);
+    flex-shrink: 0;
+    cursor: pointer;
     transition: all var(--transition);
-    cursor: default;
     position: relative;
   }
-  .calendar-day:hover { outline: 2px solid var(--accent); outline-offset: 1px; }
-  .calendar-day.future { background: transparent; border: 1px dashed var(--border); opacity: 0.3; }
+
   .calendar-day.level-1 { background: #d4e8d0; }
   .calendar-day.level-2 { background: #a3d49a; }
   .calendar-day.level-3 { background: #6bba62; }
   .calendar-day.level-4 { background: #2D5A27; }
 
-  .calendar-day[data-tooltip]:hover::after {
+  .calendar-day.future {
+    background: transparent;
+    border: 1px dashed var(--border);
+  }
+
+  .calendar-day:hover {
+    outline: 1px solid var(--accent);
+  }
+
+  .calendar-day[data-tooltip]::after {
     content: attr(data-tooltip);
-    position: absolute; bottom: calc(100% + 6px); left: 50%;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
     transform: translateX(-50%);
-    background: var(--text-primary); color: white;
-    padding: 4px 10px; border-radius: 6px;
-    font-size: 11px; white-space: nowrap; z-index: 10; pointer-events: none;
-  }
-  .calendar-day[data-tooltip]:hover::before {
-    content: '';
-    position: absolute; bottom: calc(100% + 2px); left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent; border-top-color: var(--text-primary);
-    z-index: 10; pointer-events: none;
+    background: var(--text-primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition);
+    margin-bottom: 4px;
+    z-index: 100;
   }
 
-  .calendar-months {
-    display: flex; font-size: 10px; color: var(--text-tertiary);
-    margin-bottom: 4px; gap: 0;
+  .calendar-day[data-tooltip]:hover::after {
+    opacity: 1;
   }
-  .calendar-month-label { font-weight: 500; }
-
-  .calendar-container { display: flex; gap: 4px; }
-
-  .calendar-dow {
-    display: flex; flex-direction: column; gap: 3px;
-    font-size: 9px; color: var(--text-tertiary);
-  }
-  .calendar-dow span { height: 13px; display: flex; align-items: center; }
 
   .calendar-legend {
-    display: flex; align-items: center; gap: 3px;
-    margin-top: 10px; justify-content: flex-end;
-    font-size: 10px; color: var(--text-tertiary);
-  }
-  .legend-box { width: 11px; height: 11px; border-radius: 2px; }
-
-  @media (max-width: 600px) {
-    .streak-stat-value { font-size: 22px; }
-    .calendar-day { width: 10px; height: 10px; }
-    .streak-stats { flex-direction: column; }
-    .streak-stat:not(:last-child) { border-right: none; border-bottom: 1px solid var(--border); }
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 10px;
+    color: var(--text-tertiary);
+    margin-top: 8px;
   }
 
-  /* ===== Export Modal ===== */
+  .legend-box {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+  }
+
+  /* Sidebar Actions */
+  .sidebar-actions {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn-export-sidebar {
+    padding: 8px 12px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: var(--accent-light);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: 100%;
+  }
+  .btn-export-sidebar:hover { background: var(--accent); color: white; }
+
+  /* ===== Main Content ===== */
+  .app-main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  /* ===== Navigation Tabs ===== */
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .nav-tab {
+    padding: 12px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: color var(--transition);
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover { color: var(--text-primary); }
+
+  .nav-tab.active {
+    color: var(--accent);
+  }
+
+  .nav-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .badge {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 6px;
+    background: var(--orange-light);
+    color: var(--orange);
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    min-width: 18px;
+    text-align: center;
+  }
+
+  /* ===== Views ===== */
+  .views-container {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .view {
+    display: none;
+    padding: 24px;
+  }
+
+  .view.active { display: block; }
+
+  /* ===== Writing View ===== */
+  #view-write {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .write-top {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .writing-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    transition: all var(--transition);
+  }
+
+  .stat-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .stat-card.running {
+    background: var(--accent-light);
+    border-color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-sub {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 4px;
+  }
+
+  .progress-wrap {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .progress-label {
+    color: var(--text-secondary);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .timer-controls {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-secondary {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border-light); }
+
+  .btn-danger {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1px solid var(--red);
+  }
+  .btn-danger:hover { background: var(--red); color: white; }
+
+  .btn-orange {
+    background: var(--orange);
+    color: white;
+  }
+  .btn-orange:hover { opacity: 0.9; }
+
+  .quick-idea-trigger, .research-toggle, .btn-save-manual {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .quick-idea-trigger:hover, .research-toggle:hover, .btn-save-manual:hover {
+    background: var(--border-light);
+  }
+
+  .research-toggle.active {
+    background: var(--blue-light);
+    color: var(--blue);
+    border-color: var(--blue);
+  }
+
+  /* Quick Idea Panel */
+  .quick-idea-panel {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .quick-idea-panel.open { display: block; }
+
+  .quick-idea-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .quick-idea-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .quick-idea-label {
+    color: var(--text-primary);
+  }
+
+  .kbd-hint {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 10px;
+    font-family: monospace;
+  }
+
+  .panel-close {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 16px;
+    transition: color var(--transition);
+  }
+  .panel-close:hover { color: var(--text-primary); }
+
+  .quick-idea-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .quick-idea-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-family: inherit;
+    resize: none;
+  }
+
+  .quick-idea-recent {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .idea-tag {
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .idea-tag-remove {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0;
+  }
+
+  /* Split Container (Writing + Research) */
+  .split-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .app.split-mode .split-container {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .split-left, .split-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .split-right {
+    display: none;
+  }
+
+  .app.split-mode .split-right {
+    display: flex;
+  }
+
+  /* Editor Styles */
+  .editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .editor-header {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .editor-title-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .save-indicator {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    opacity: 0;
+    transition: opacity var(--transition);
+  }
+
+  .save-indicator.show { opacity: 1; color: var(--accent); }
+
+  .toolbar {
+    display: flex;
+    gap: 4px;
+    padding: 8px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    flex-wrap: wrap;
+  }
+
+  .toolbar-btn {
+    padding: 4px 8px;
+    background: transparent;
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .toolbar-btn:hover {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text-primary);
+  }
+
+  .toolbar-btn.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .editor {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-size: 14px;
+    line-height: 1.8;
+    outline: none;
+    resize: none;
+    min-height: 300px;
+  }
+
+  .editor:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+  }
+
+  /* Ideas View */
+  #view-ideas {
+    padding: 24px;
+  }
+
+  .ideas-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .idea-card {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all var(--transition);
+    position: relative;
+  }
+
+  .idea-card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .idea-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 6px;
+  }
+
+  .idea-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-primary);
+    word-break: break-word;
+  }
+
+  .idea-delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 14px;
+    transition: color var(--transition);
+    opacity: 0;
+  }
+
+  .idea-card:hover .idea-delete-btn { opacity: 1; }
+  .idea-delete-btn:hover { color: var(--red); }
+
+  /* Research View */
+  #view-research {
+    padding: 24px;
+  }
+
+  .research-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .research-item {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .research-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .research-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .research-meta {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
+
+  .research-preview {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .research-editor {
+    flex: 1;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    font-size: 14px;
+    line-height: 1.8;
+    outline: none;
+    resize: none;
+    min-height: 200px;
+  }
+
+  .research-editor:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-light);
+  }
+
+  .research-note-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .research-note-title {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .research-note-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-delete-research {
+    background: var(--red-light);
+    color: var(--red);
+    border: 1px solid var(--red);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all var(--transition);
+  }
+  .btn-delete-research:hover { background: var(--red); color: white; }
+
+  /* History View */
+  #view-history {
+    padding: 24px;
+  }
+
+  .history-filter {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 6px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .history-item {
+    padding: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .history-item:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .history-item.active {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+
+  .history-date {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  .history-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .history-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* Slider Panel (History Detail) */
+  .slider-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.3);
+    z-index: 500;
+  }
+
+  .slider-overlay.active { display: block; }
+
+  .slider-panel {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 501;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .slider-panel.active { transform: translateX(0); }
+
+  .slider-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .slider-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .slider-close {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 16px;
+    transition: color var(--transition);
+  }
+  .slider-close:hover { color: var(--text-primary); }
+
+  .slider-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
+
+  .slider-item {
+    margin-bottom: 16px;
+  }
+
+  .slider-item-date {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+
+  .slider-item-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .slider-item-meta {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+
+  .slider-item-content {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-primary);
+    word-break: break-word;
+  }
+
+  .slider-toc {
+    padding: 12px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+  }
+
+  .slider-toc-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+  }
+
+  .slider-toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .slider-toc-item {
+    font-size: 11px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color var(--transition);
+    padding: 2px 0;
+  }
+
+  .slider-toc-item:hover { color: var(--accent); }
+
+  /* Export Modal */
   .export-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
-    z-index: 200; align-items: center; justify-content: center;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 600;
   }
-  .export-overlay.active { display: flex; }
+
+  .export-overlay.active { display: flex; align-items: center; justify-content: center; }
 
   .export-modal {
     background: var(--surface);
     border-radius: var(--radius-lg);
-    padding: 32px;
-    max-width: 480px; width: 90%;
     box-shadow: var(--shadow-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
-  .export-modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-  .export-modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+  .export-header {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
 
-  .export-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; max-height: 50vh; overflow-y: auto; }
+  .export-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .export-close {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 16px;
+    transition: color var(--transition);
+  }
+  .export-close:hover { color: var(--text-primary); }
+
+  .export-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+  }
 
   .export-category {
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    overflow: hidden; transition: all var(--transition);
+    margin-bottom: 16px;
   }
 
   .export-category-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 12px 16px;
-    cursor: pointer; transition: all var(--transition);
-    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: var(--bg);
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
   }
-  .export-category-header:hover { background: var(--surface-hover); }
-  .export-category input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
-  .export-category-label { font-size: 14px; font-weight: 600; }
-  .export-category-count { font-size: 12px; color: var(--text-tertiary); margin-left: auto; }
-  .export-category-arrow { font-size: 12px; color: var(--text-tertiary); transition: transform 0.2s ease; margin-left: 6px; }
-  .export-category.expanded .export-category-arrow { transform: rotate(90deg); }
+
+  .export-category-header input {
+    cursor: pointer;
+  }
+
+  .export-category-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+  }
+
+  .export-category-count {
+    font-size: 11px;
+    color: var(--text-tertiary);
+  }
 
   .export-items {
-    max-height: 0; overflow: hidden;
-    transition: max-height 0.3s ease;
-    background: var(--bg);
-    border-top: 1px solid var(--border-light);
+    display: none;
+    margin-top: 8px;
+    margin-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
-  .export-category.expanded .export-items { max-height: 600px; overflow-y: auto; }
+
+  .export-category.expanded .export-items {
+    display: flex;
+  }
 
   .export-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 16px 8px 42px;
-    cursor: pointer; transition: all var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .export-item input {
+    cursor: pointer;
+  }
+
+  .export-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .export-selected-count {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .btn-do-export {
+    padding: 8px 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all var(--transition);
+  }
+  .btn-do-export:hover { background: var(--accent-hover); }
+
+  /* Toast Notifications */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    background: var(--text-primary);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
     font-size: 13px;
+    box-shadow: var(--shadow-lg);
+    z-index: 2000;
+    animation: slideIn 0.3s ease;
   }
-  .export-item:hover { background: var(--accent-light); }
-  .export-item input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
-  .export-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
-  .export-item-date { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
 
-  .export-selected-count { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+  @keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 
-  .export-actions { display: flex; gap: 8px; justify-content: flex-end; }
-
-  /* ===== Save Toast ===== */
-  .save-toast {
-    position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
-    background: var(--accent); color: white;
-    padding: 12px 24px; border-radius: var(--radius-md);
-    font-size: 15px; font-weight: 600;
-    box-shadow: 0 8px 24px rgba(45,90,39,0.3);
-    z-index: 200; pointer-events: none;
-    opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex; align-items: center; gap: 8px;
+  .toast.auto-save {
+    background: var(--accent);
   }
-  .save-toast.show {
-    opacity: 1; transform: translateX(-50%) translateY(0);
-  }
-  .save-toast.manual { background: var(--accent); }
-  .save-toast.auto { background: var(--text-tertiary); font-weight: 500; font-size: 13px; padding: 8px 18px; }
 
-  /* ===== Responsive ===== */
+  .toast.manual-save {
+    background: var(--blue);
+  }
+
+  /* Mobile Responsive */
   @media (max-width: 768px) {
-    .app.split-mode { padding: 16px; }
-    .split-container { flex-direction: column; }
-    .split-mode .split-right { flex: none; }
-    .rich-editor { min-height: 250px; }
-  }
+    .app-layout {
+      flex-direction: column;
+    }
 
-  @media (max-width: 600px) {
-    .app { padding: 20px 16px 80px; }
-    .writing-stats { flex-direction: column; gap: 8px; }
-    .stat-value { font-size: 22px; }
-    .rich-editor { min-height: 220px; padding: 16px; }
-    .header { flex-direction: column; align-items: flex-start; gap: 4px; }
-    .user-bar { margin-top: 8px; }
+    .app-sidebar {
+      width: 100%;
+      min-width: auto;
+      height: auto;
+      position: relative;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      flex-direction: row;
+      align-items: center;
+      padding: 12px;
+      gap: 12px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    .sidebar-logo {
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+
+    .sidebar-user {
+      display: none;
+    }
+
+    .streak-section {
+      display: none;
+    }
+
+    .sidebar-actions {
+      margin-top: 0;
+      flex-direction: row;
+      margin-left: auto;
+    }
+
+    .nav-tabs {
+      padding: 0 12px;
+    }
+
+    .view {
+      padding: 12px;
+    }
+
+    #view-write {
+      padding: 12px;
+    }
+
+    .split-container {
+      gap: 8px;
+    }
+
+    .app.split-mode .split-container {
+      grid-template-columns: 1fr;
+    }
+
+    .app.split-mode .split-right {
+      max-height: 300px;
+    }
+
+    .slider-panel {
+      width: 100%;
+    }
+
+    .export-modal {
+      width: 95%;
+    }
+
+    .ideas-container {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+
+    .writing-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .timer-controls {
+      flex-direction: column;
+    }
+
+    .btn, .quick-idea-trigger, .research-toggle, .btn-save-manual {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .quick-idea-panel {
+      width: 100%;
+    }
+
+    .quick-idea-inner {
+      padding: 12px;
+    }
+
+    .quick-idea-header {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
   }
 
   ::-webkit-scrollbar { width: 6px; }
@@ -1057,259 +1503,241 @@
   </div>
 </div>
 
-<!-- ===== Main App ===== -->
-<div class="app" id="app">
-  <header class="header">
-    <div class="logo">
-      <div class="logo-icon">&#9998;</div>
-      <h1>心流写作</h1>
+<!-- ===== Main App Layout ===== -->
+<div class="app-layout" id="appLayout">
+  <!-- Sidebar -->
+  <aside class="app-sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">&#9998;</div>
+      <div class="sidebar-logo-text">心流写作</div>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div class="header-date" id="headerDate"></div>
-      <button class="btn-export" onclick="openExportModal()">&#128229; 导出 Markdown</button>
-      <div class="user-bar" id="userBar">
-        <img class="user-avatar" id="userAvatar" src="" alt="">
-        <span class="user-name" id="userName"></span>
-        <button class="btn-logout" onclick="logout()">登出</button>
+
+    <!-- User Info -->
+    <div class="sidebar-user" id="sidebarUser">
+      <div class="sidebar-user-info">
+        <img class="sidebar-user-avatar" id="sidebarUserAvatar" src="" alt="">
+        <div class="sidebar-user-details">
+          <div class="sidebar-user-name" id="sidebarUserName"></div>
+          <div class="sidebar-user-email" id="sidebarUserEmail"></div>
+        </div>
       </div>
+      <button class="btn-logout" onclick="logout()">登出</button>
     </div>
-  </header>
 
-  <nav class="nav-tabs">
-    <button class="nav-tab active" data-view="write" onclick="switchView('write')">&#9997;&#65039; 今日写作</button>
-    <button class="nav-tab" data-view="ideas" onclick="switchView('ideas')">&#128161; 随机想法 <span class="badge" id="ideasBadge">0</span></button>
-    <button class="nav-tab" data-view="research" onclick="switchView('research')">&#128269; 调研汇总 <span class="badge" id="researchBadge">0</span></button>
-    <button class="nav-tab" data-view="history" onclick="switchView('history')">&#128218; 写作记录</button>
-  </nav>
-
-  <!-- ==================== TODAY'S WRITING ==================== -->
-  <div class="view active" id="view-write">
-    <div class="write-top">
-
-    <!-- Streak Card -->
-    <div class="streak-card" id="streakCard">
-      <div class="streak-header">
-        <span class="streak-title">&#128200; 写作统计</span>
-        <span class="streak-year" id="streakYear">2026年</span>
-      </div>
+    <!-- Streak Stats -->
+    <div class="streak-section">
       <div class="streak-stats">
-        <div class="streak-stat">
-          <div class="streak-stat-value" id="statTotalWords">0</div>
-          <div class="streak-stat-label">总字数</div>
+        <div class="streak-stat-row">
+          <span class="streak-stat-label">总字数</span>
+          <span class="streak-stat-value" id="statTotalWords">0</span>
         </div>
-        <div class="streak-stat">
-          <div class="streak-stat-value" id="statWritingDays">0</div>
-          <div class="streak-stat-label">写作天数</div>
+        <div class="streak-stat-row">
+          <span class="streak-stat-label">写作天数</span>
+          <span class="streak-stat-value" id="statWritingDays">0</span>
         </div>
-        <div class="streak-stat">
-          <div class="streak-stat-value"><span id="statStreak">0</span> <span style="font-size:16px;vertical-align:middle;">&#128293;</span></div>
-          <div class="streak-stat-label">连续写作</div>
+        <div class="streak-stat-row">
+          <span class="streak-stat-label">连续写作</span>
+          <span class="streak-stat-value"><span id="statStreak">0</span> &#128293;</span>
         </div>
       </div>
+
+      <!-- Calendar Heatmap -->
       <div class="calendar-wrap">
-        <div class="calendar-months" id="calendarMonths"></div>
+        <div class="calendar-header" id="streakYear">2026年</div>
         <div class="calendar-container">
+          <div class="calendar-months" id="calendarMonths"></div>
           <div class="calendar-dow">
             <span>&nbsp;</span><span>一</span><span>&nbsp;</span><span>三</span><span>&nbsp;</span><span>五</span><span>&nbsp;</span>
           </div>
           <div class="calendar-grid" id="calendarGrid"></div>
         </div>
-      </div>
-      <div class="calendar-legend">
-        <span>少</span>
-        <div class="legend-box" style="background:var(--border-light);"></div>
-        <div class="legend-box" style="background:#d4e8d0;"></div>
-        <div class="legend-box" style="background:#a3d49a;"></div>
-        <div class="legend-box" style="background:#6bba62;"></div>
-        <div class="legend-box" style="background:#2D5A27;"></div>
-        <span>多</span>
-      </div>
-    </div>
-
-    <div class="writing-stats">
-      <div class="stat-card timer-card" id="timerCard">
-        <div class="stat-label">写作时长</div>
-        <div class="stat-value" id="timerDisplay">00:00</div>
-        <div class="stat-sub">目标 30 分钟</div>
-      </div>
-      <div class="stat-card words-card" id="wordsCard">
-        <div class="stat-label">字数统计</div>
-        <div class="stat-value" id="wordCount">0</div>
-        <div class="stat-sub" id="wordsSub">开始写作吧</div>
-      </div>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-header">
-        <span class="progress-label" id="progressLabel">距离目标 1000 字</span>
-        <span class="progress-label" id="progressPercent">0%</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-
-    <div class="timer-controls">
-      <button class="btn btn-primary" id="btnStart" onclick="toggleTimer()">&#9654; 开始写作</button>
-      <button class="btn btn-secondary" id="btnReset" onclick="resetToday()" style="display:none">重新开始</button>
-      <button class="quick-idea-trigger" id="quickIdeaBtn" onclick="toggleQuickIdea()">&#128161; 记个想法</button>
-      <button class="research-toggle" id="researchToggleBtn" onclick="toggleResearchSplit()">&#128269; 记调研</button>
-      <button class="btn-save-manual" onclick="manualSave()">&#128190; 手动保存</button>
-    </div>
-
-    <!-- Quick Idea Dropdown -->
-    <div class="quick-idea-panel" id="quickIdeaPanel">
-      <div class="quick-idea-inner">
-        <div class="quick-idea-header">
-          <span class="quick-idea-label">&#128161; 快速记录想法</span>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span class="kbd-hint"><kbd>Enter</kbd> 保存 · <kbd>Shift</kbd>+<kbd>Enter</kbd> 换行</span>
-            <button class="panel-close" onclick="toggleQuickIdea()">&#10005;</button>
-          </div>
-        </div>
-        <div class="quick-idea-row">
-          <textarea class="quick-idea-input" id="quickIdeaInput" rows="2"
-            placeholder="灵感稍纵即逝，快记下来..."
-            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQuickIdea();}"></textarea>
-          <button class="btn-orange" onclick="addQuickIdea()">保存</button>
-        </div>
-        <div class="quick-idea-recent" id="quickIdeaRecent"></div>
-      </div>
-    </div>
-
-    </div><!-- /write-top -->
-
-    <!-- Split: Left = Writing, Right = Research -->
-    <div class="split-container">
-      <div class="split-left">
-        <div class="editor-wrap">
-          <input class="writing-title-input" id="writingTitle" placeholder="输入标题..." oninput="onTitleChange()">
-          <div class="editor-toolbar" id="editorToolbar">
-            <button class="toolbar-btn h1" onclick="formatBlock('editor','H1')" title="标题 1">H1</button>
-            <button class="toolbar-btn h2" onclick="formatBlock('editor','H2')" title="标题 2">H2</button>
-            <button class="toolbar-btn" onclick="formatBlock('editor','H3')" title="标题 3">H3</button>
-            <button class="toolbar-btn" onclick="formatBlock('editor','H4')" title="标题 4">H4</button>
-            <button class="toolbar-btn" onclick="formatBlock('editor','H5')" title="标题 5">H5</button>
-            <button class="toolbar-btn" onclick="formatBlock('editor','H6')" title="标题 6">H6</button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn p-btn" onclick="formatBlock('editor','P')" title="正文">P</button>
-          </div>
-          <div class="rich-editor" id="editor" contenteditable="true"
-            data-placeholder="开始你的意识流写作... 不用在意结构和逻辑，想到什么就写什么。让文字自然地流淌。"></div>
-          <div class="editor-footer">
-            <span class="editor-hint">自由书写，选中文字后可设置格式</span>
-            <span class="save-indicator" id="saveIndicator">&#10003; 已自动保存</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="split-right" id="splitRight">
-        <div class="research-panel-header">
-          <span class="research-panel-title">&#128269; 调研笔记</span>
-          <div class="research-panel-actions">
-            <button class="btn-blue" onclick="saveResearchNote()">保存调研</button>
-            <button class="panel-close" onclick="toggleResearchSplit()" title="关闭调研面板">&#10005;</button>
-          </div>
-        </div>
-        <input class="research-title-input" id="researchNoteTitle" placeholder="调研主题">
-        <div class="editor-wrap research-editor">
-          <div class="editor-toolbar">
-            <button class="toolbar-btn h1" onclick="formatBlock('researchEditor','H1')" title="标题 1">H1</button>
-            <button class="toolbar-btn h2" onclick="formatBlock('researchEditor','H2')" title="标题 2">H2</button>
-            <button class="toolbar-btn" onclick="formatBlock('researchEditor','H3')" title="标题 3">H3</button>
-            <button class="toolbar-btn" onclick="formatBlock('researchEditor','H4')" title="标题 4">H4</button>
-            <button class="toolbar-btn" onclick="formatBlock('researchEditor','H5')" title="标题 5">H5</button>
-            <button class="toolbar-btn" onclick="formatBlock('researchEditor','H6')" title="标题 6">H6</button>
-            <div class="toolbar-divider"></div>
-            <button class="toolbar-btn p-btn" onclick="formatBlock('researchEditor','P')" title="正文">P</button>
-          </div>
-          <div class="rich-editor" id="researchEditor" contenteditable="true"
-            data-placeholder="把从 Claude 或其他地方看到的内容记录在这里..."></div>
-          <div class="editor-footer">
-            <span class="editor-hint">支持 H1-H6 格式</span>
-            <span class="save-indicator" id="researchSaveIndicator">&#10003; 已保存</span>
-          </div>
+        <div class="calendar-legend">
+          <span>少</span>
+          <div class="legend-box" style="background:var(--border-light);"></div>
+          <div class="legend-box" style="background:#d4e8d0;"></div>
+          <div class="legend-box" style="background:#a3d49a;"></div>
+          <div class="legend-box" style="background:#6bba62;"></div>
+          <div class="legend-box" style="background:#2D5A27;"></div>
+          <span>多</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ==================== RANDOM IDEAS ==================== -->
-  <div class="view" id="view-ideas">
-    <div class="idea-input-wrap">
-      <input class="idea-input" id="ideaInput" placeholder="记下一个灵感、想法、或任何闪念..." onkeydown="if(event.key==='Enter')addIdea()">
-      <button class="btn btn-primary" onclick="addIdea()">记录</button>
+    <!-- Sidebar Actions -->
+    <div class="sidebar-actions">
+      <button class="btn-export-sidebar" onclick="openExportModal()">&#128229; 导出 Markdown</button>
     </div>
-    <div class="ideas-list" id="ideasList"></div>
-  </div>
+  </aside>
 
-  <!-- ==================== RESEARCH TAB ==================== -->
-  <div class="view" id="view-research">
-    <div class="research-tab-input">
-      <input class="research-title-input" id="researchTitleInput" placeholder="调研主题">
-      <textarea class="research-tab-body" id="researchBodyInput" rows="4" placeholder="记录你的调研发现、从 Claude 得到的回答、阅读笔记..."></textarea>
-      <div class="research-tab-actions">
-        <button class="btn-blue" onclick="addResearch()">保存调研</button>
+  <!-- Main Content Area -->
+  <main class="app-main">
+    <div class="app" id="app">
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-view="write" onclick="switchView('write')">&#9997;&#65039; 今日写作</button>
+        <button class="nav-tab" data-view="ideas" onclick="switchView('ideas')">&#128161; 随机想法 <span class="badge" id="ideasBadge">0</span></button>
+        <button class="nav-tab" data-view="research" onclick="switchView('research')">&#128269; 调研汇总 <span class="badge" id="researchBadge">0</span></button>
+        <button class="nav-tab" data-view="history" onclick="switchView('history')">&#128218; 写作记录</button>
+      </nav>
+
+      <!-- Views Container -->
+      <div class="views-container">
+        <!-- ==================== TODAY'S WRITING ==================== -->
+        <div class="view active" id="view-write">
+          <div class="write-top">
+            <div class="writing-stats">
+              <div class="stat-card timer-card" id="timerCard">
+                <div class="stat-label">写作时长</div>
+                <div class="stat-value" id="timerDisplay">00:00</div>
+                <div class="stat-sub">目标 30 分钟</div>
+              </div>
+              <div class="stat-card words-card" id="wordsCard">
+                <div class="stat-label">字数统计</div>
+                <div class="stat-value" id="wordCount">0</div>
+                <div class="stat-sub" id="wordsSub">开始写作吧</div>
+              </div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-header">
+                <span class="progress-label" id="progressLabel">距离目标 1000 字</span>
+                <span class="progress-label" id="progressPercent">0%</span>
+              </div>
+              <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+            </div>
+
+            <div class="timer-controls">
+              <button class="btn btn-primary" id="btnStart" onclick="toggleTimer()">&#9654; 开始写作</button>
+              <button class="btn btn-secondary" id="btnReset" onclick="resetToday()" style="display:none">重新开始</button>
+              <button class="quick-idea-trigger" id="quickIdeaBtn" onclick="toggleQuickIdea()">&#128161; 记个想法</button>
+              <button class="research-toggle" id="researchToggleBtn" onclick="toggleResearchSplit()">&#128269; 记调研</button>
+              <button class="btn-save-manual" onclick="manualSave()">&#128190; 手动保存</button>
+            </div>
+
+            <!-- Quick Idea Dropdown -->
+            <div class="quick-idea-panel" id="quickIdeaPanel">
+              <div class="quick-idea-inner">
+                <div class="quick-idea-header">
+                  <span class="quick-idea-label">&#128161; 快速记录想法</span>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <span class="kbd-hint"><kbd>Enter</kbd> 保存 · <kbd>Shift</kbd>+<kbd>Enter</kbd> 换行</span>
+                    <button class="panel-close" onclick="toggleQuickIdea()">&#10005;</button>
+                  </div>
+                </div>
+                <div class="quick-idea-row">
+                  <textarea class="quick-idea-input" id="quickIdeaInput" rows="2"
+                    placeholder="灵感稍纵即逝，快记下来..."
+                    onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();addQuickIdea();}"></textarea>
+                  <button class="btn-orange" onclick="addQuickIdea()">保存</button>
+                </div>
+                <div class="quick-idea-recent" id="quickIdeaRecent"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Split: Left = Writing, Right = Research -->
+          <div class="split-container">
+            <div class="split-left">
+              <div class="editor-wrapper">
+                <div class="editor-header">
+                  <input type="text" class="editor-title-input" id="writingTitle" placeholder="给今天的写作起个标题（可选）">
+                  <div class="save-indicator" id="saveIndicator"></div>
+                </div>
+                <div class="toolbar">
+                  <button class="toolbar-btn" data-cmd="formatBlock" data-arg="p" title="段落">段落</button>
+                  <button class="toolbar-btn" data-cmd="formatBlock" data-arg="h2" title="标题">标题</button>
+                  <button class="toolbar-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+                  <button class="toolbar-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+                  <button class="toolbar-btn" data-cmd="underline" title="下划线"><u>U</u></button>
+                  <button class="toolbar-btn" data-cmd="insertUnorderedList" title="列表">• 列表</button>
+                  <button class="toolbar-btn" data-cmd="createLink" data-arg="https://example.com" title="链接">🔗</button>
+                </div>
+                <div class="editor" id="editor" contenteditable="true" placeholder="开始写作..."></div>
+              </div>
+            </div>
+
+            <!-- Split Right: Research Notes -->
+            <div class="split-right">
+              <div class="research-note-form">
+                <input type="text" class="research-note-title" id="researchNoteTitle" placeholder="调研笔记标题">
+                <div class="toolbar">
+                  <button class="toolbar-btn" data-cmd="formatBlock" data-arg="p" title="段落">段落</button>
+                  <button class="toolbar-btn" data-cmd="formatBlock" data-arg="h3" title="标题">标题</button>
+                  <button class="toolbar-btn" data-cmd="bold" title="加粗"><b>B</b></button>
+                  <button class="toolbar-btn" data-cmd="italic" title="斜体"><i>I</i></button>
+                  <button class="toolbar-btn" data-cmd="insertUnorderedList" title="列表">• 列表</button>
+                </div>
+                <div class="research-editor" id="researchEditor" contenteditable="true" placeholder="记录调研内容..."></div>
+                <div class="research-note-actions">
+                  <button class="btn btn-secondary" onclick="saveAndCloseResearch()">保存</button>
+                  <button class="btn-delete-research" onclick="deleteCurrentResearch()">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== IDEAS VIEW ==================== -->
+        <div class="view" id="view-ideas">
+          <div class="ideas-container" id="ideasContainer"></div>
+        </div>
+
+        <!-- ==================== RESEARCH VIEW ==================== -->
+        <div class="view" id="view-research">
+          <div class="research-list" id="researchList"></div>
+        </div>
+
+        <!-- ==================== HISTORY VIEW ==================== -->
+        <div class="view" id="view-history">
+          <div class="history-filter">
+            <button class="filter-btn active" data-filter="all" onclick="filterHistory('all')">全部</button>
+            <button class="filter-btn" data-filter="manual" onclick="filterHistory('manual')">手动保存</button>
+            <button class="filter-btn" data-filter="auto" onclick="filterHistory('auto')">自动保存</button>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </div>
       </div>
     </div>
-    <div class="research-list" id="researchList"></div>
-  </div>
-
-  <!-- ==================== HISTORY ==================== -->
-  <div class="view" id="view-history">
-    <div class="history-filter">
-      <button class="filter-btn active" data-filter="all" onclick="filterHistory('all')">全部</button>
-      <button class="filter-btn" data-filter="manual" onclick="filterHistory('manual')">手动保存</button>
-      <button class="filter-btn" data-filter="auto" onclick="filterHistory('auto')">自动保存</button>
-    </div>
-    <div class="history-list" id="historyList"></div>
-  </div>
+  </main>
 </div>
 
-<!-- Slider Panel -->
+<!-- Slider Panel (History Detail) -->
 <div class="slider-overlay" id="sliderOverlay" onclick="closeSlider()"></div>
 <div class="slider-panel" id="sliderPanel">
   <div class="slider-header">
     <div class="slider-title" id="sliderTitle"></div>
     <button class="slider-close" onclick="closeSlider()">&#10005;</button>
   </div>
-  <div class="slider-content">
-    <div class="slider-toc" id="sliderToc">
-      <div class="toc-label">目录概览</div>
-      <ul class="toc-list" id="tocList"></ul>
-    </div>
-    <div class="slider-body" id="sliderBody"></div>
-  </div>
-  <div class="slider-footer">
-    <button class="btn btn-danger" id="btnDeleteHistory" onclick="deleteHistoryEntry()">删除</button>
-    <button class="btn btn-secondary" onclick="closeSlider()">关闭</button>
-  </div>
+  <div class="slider-content" id="sliderContent"></div>
 </div>
 
 <!-- Export Modal -->
 <div class="export-overlay" id="exportOverlay" onclick="if(event.target===this)closeExportModal()">
   <div class="export-modal">
-    <h2>&#128229; 导出为 Markdown</h2>
-    <p>选择要导出的内容，可直接放入 Obsidian vault 使用</p>
-    <div class="export-selected-count" id="exportSelectedCount">已选择 0 项</div>
-    <div class="export-options" id="exportOptions"></div>
-    <div class="export-actions">
-      <button class="btn btn-secondary" onclick="closeExportModal()">取消</button>
-      <button class="btn btn-primary" onclick="doExport()">&#128229; 导出并下载</button>
+    <div class="export-header">
+      <div class="export-title">导出内容</div>
+      <button class="export-close" onclick="closeExportModal()">&#10005;</button>
+    </div>
+    <div class="export-content" id="exportContent"></div>
+    <div class="export-footer">
+      <span class="export-selected-count" id="exportSelectedCount">已选择 0 项</span>
+      <button class="btn-do-export" onclick="doExport()">导出为 Markdown</button>
     </div>
   </div>
 </div>
 
-<!-- Save Toast -->
-<div class="save-toast" id="saveToast"></div>
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
 
-<!-- ===== Firebase SDK ===== -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js"></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 
 <script>
-// ============================================================
-// FIREBASE CONFIG — Replace with your own Firebase project config
-// ============================================================
+// ===== Firebase Config =====
 const firebaseConfig = {
   apiKey: "AIzaSyBcaEBG7cyncCHdEujryQRf53xNEkcsvsY",
   authDomain: "xinliu-writing-25a57.firebaseapp.com",
@@ -1323,207 +1751,164 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ===== Auth State =====
+// ===== User State =====
 let currentUser = null;
-let userDocRef = null; // shortcut: db.collection('users').doc(uid)
+let todayDocId = null;
+let todayData = null;
 
-auth.onAuthStateChanged(async (user) => {
-  if (user) {
-    currentUser = user;
-    userDocRef = db.collection('users').doc(user.uid);
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').classList.add('visible');
-    document.getElementById('userAvatar').src = user.photoURL || '';
-    document.getElementById('userName').textContent = user.displayName || user.email;
-    await initApp();
-  } else {
-    currentUser = null;
-    userDocRef = null;
-    document.getElementById('loginScreen').style.display = '';
-    document.getElementById('app').classList.remove('visible');
-    document.getElementById('loginLoading').style.display = 'none';
-    document.getElementById('btnGoogleLogin').style.display = '';
-  }
-});
-
-function googleLogin() {
-  document.getElementById('btnGoogleLogin').style.display = 'none';
-  document.getElementById('loginLoading').style.display = 'flex';
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => {
-    console.error('Login error:', err);
-    document.getElementById('loginLoading').style.display = 'none';
-    document.getElementById('btnGoogleLogin').style.display = '';
-    alert('登录失败: ' + err.message);
-  });
-}
-
-function logout() {
-  if (isTimerRunning) pauseTimer();
-  auth.signOut();
-}
-
-// ===== Firestore helpers =====
-function userCol(name) { return userDocRef.collection(name); }
-
-async function fsGet(colName) {
-  const snap = await userCol(colName).orderBy('createdAt', 'desc').get();
-  return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
-}
-
-async function fsAdd(colName, data) {
-  data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-  data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-  const ref = await userCol(colName).add(data);
-  return ref.id;
-}
-
-async function fsUpdate(colName, docId, data) {
-  data.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-  await userCol(colName).doc(docId).update(data);
-}
-
-async function fsDelete(colName, docId) {
-  await userCol(colName).doc(docId).delete();
-}
-
-async function fsGetDoc(colName, docId) {
-  const snap = await userCol(colName).doc(docId).get();
-  return snap.exists ? { _docId: snap.id, ...snap.data() } : null;
-}
-
-// ===== In-memory caches (loaded from Firestore on init) =====
+// ===== Data Caches =====
+let historyCache = [];
 let ideasCache = [];
 let researchCache = [];
-let historyCache = [];
-let todayDocId = null; // Firestore doc ID for today's auto-save entry
-let todayData = null;  // { title, html, timerSeconds }
 
-// ===== State =====
-let timerInterval = null;
-let timerSeconds = 0;
+// ===== UI State =====
 let isTimerRunning = false;
+let timerSeconds = 0;
+let timerInterval = null;
 let saveTimeout = null;
-let currentModalId = null;
-let currentModalDocId = null;
 let isResearchOpen = false;
 let currentResearchAutoDocId = null;
+let currentHistoryFilter = 'all';
+let exportSelections = { history: new Set(), ideas: new Set(), research: new Set() };
 
-// ===== Editor helpers =====
-function getEditorEl() { return document.getElementById('editor'); }
-function getEditorText() { return getEditorEl().innerText || ''; }
-function getEditorHTML() { return getEditorEl().innerHTML || ''; }
-function setEditorHTML(html) { getEditorEl().innerHTML = html; }
-function clearEditor() { getEditorEl().innerHTML = ''; }
-
-// ===== Format Block =====
-function formatBlock(editorId, tag) {
-  const el = document.getElementById(editorId);
-  const sel = window.getSelection();
-  const savedRange = sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
-  if (document.activeElement !== el) {
-    el.focus();
-    if (savedRange && el.contains(savedRange.startContainer)) {
-      sel.removeAllRanges();
-      sel.addRange(savedRange);
-    }
-  }
-  document.execCommand('formatBlock', false, tag);
-  updateToolbarState(editorId);
+// ===== Firebase Utilities =====
+function userCol(name) {
+  return db.collection('users').doc(currentUser.uid).collection(name);
 }
 
-function updateToolbarState(editorId) {
-  const editorEl = document.getElementById(editorId);
-  const toolbar = editorEl.closest('.editor-wrap').querySelector('.editor-toolbar');
-  if (!toolbar) return;
-  toolbar.querySelectorAll('.toolbar-btn').forEach(b => b.classList.remove('active'));
-  const sel = window.getSelection();
-  if (!sel.rangeCount) return;
-  let node = sel.anchorNode;
-  while (node && node !== editorEl) {
-    if (node.nodeType === 1) {
-      const tag = node.tagName;
-      const btn = toolbar.querySelector(`.toolbar-btn[onclick*="'${tag}'"]`);
-      if (btn) btn.classList.add('active');
-      return;
-    }
-    node = node.parentNode;
-  }
-  const pBtn = toolbar.querySelector('.toolbar-btn.p-btn');
-  if (pBtn) pBtn.classList.add('active');
+async function fsAdd(col, data) {
+  const snap = await userCol(col).add(data);
+  return snap.id;
 }
 
-// ===== Date helpers =====
+async function fsUpdate(col, docId, data) {
+  await userCol(col).doc(docId).update(data);
+}
+
+async function fsDelete(col, docId) {
+  await userCol(col).doc(docId).delete();
+}
+
+async function fsGet(col) {
+  const snap = await userCol(col).get();
+  return snap.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
+}
+
 function todayKey() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-function formatDate() {
-  const d = new Date();
-  const days = ['日','一','二','三','四','五','六'];
-  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${days[d.getDay()]}`;
+// ===== Auth Handlers =====
+function googleLogin() {
+  const clientId = '206589969193-qfq1u9f4i9u9f4i9u9f4i9u9f4i9u9f4.apps.googleusercontent.com';
+  google.accounts.id.initialize({ client_id: clientId, callback: handleCredentialResponse });
+  google.accounts.id.renderButton(document.getElementById('btnGoogleLogin'), { theme: 'outline', size: 'large' });
+  google.accounts.id.prompt();
 }
 
-function formatHistoryDate(dateStr) {
-  const [y, m, d] = dateStr.split('-');
-  if (dateStr === todayKey()) return '今天';
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth()+1).padStart(2,'0')}-${String(yesterday.getDate()).padStart(2,'0')}`;
-  if (dateStr === yKey) return '昨天';
-  return `${parseInt(m)}月${parseInt(d)}日`;
+function handleCredentialResponse(response) {
+  document.getElementById('loginLoading').style.display = 'flex';
+  const credential = response.credential;
+  auth.signInWithCustomToken(credential).catch(err => {
+    const decodedToken = JSON.parse(atob(credential.split('.')[1]));
+    auth.signInAnonymously().then(userCred => {
+      initApp();
+    }).catch(e => {
+      console.error('Auth error:', e);
+      document.getElementById('loginLoading').style.display = 'none';
+    });
+  });
 }
 
-document.getElementById('headerDate').textContent = formatDate();
+function logout() {
+  auth.signOut().then(() => {
+    location.reload();
+  }).catch(e => console.error('Logout error:', e));
+}
 
 // ===== View Switching =====
-function switchView(name) {
+function switchView(viewName) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(`view-${name}`).classList.add('active');
-  document.querySelector(`.nav-tab[data-view="${name}"]`).classList.add('active');
-  if (name === 'history') renderHistory();
-  if (name === 'ideas') renderIdeas();
-  if (name === 'research') renderResearch();
-  if (name !== 'write' && isResearchOpen) toggleResearchSplit();
+  document.getElementById('view-' + viewName).classList.add('active');
+  document.querySelector('[data-view="' + viewName + '"]').classList.add('active');
+
+  if (viewName === 'history') renderHistory();
+  else if (viewName === 'ideas') renderIdeas();
+  else if (viewName === 'research') renderResearch();
 }
 
-// ===== Word Count =====
+// ===== Editor Functions =====
+function getEditorHTML() {
+  return document.getElementById('editor').innerHTML;
+}
+
+function setEditorHTML(html) {
+  document.getElementById('editor').innerHTML = html;
+}
+
+function getEditorText() {
+  const el = document.getElementById('editor');
+  return el.innerText || el.textContent || '';
+}
+
+function clearEditor() {
+  document.getElementById('editor').innerHTML = '';
+}
+
+function updateToolbarState(editorId) {
+  const editor = document.getElementById(editorId);
+  if (!editor) return;
+  document.querySelectorAll(`#${editorId}Parent .toolbar-btn, .toolbar .toolbar-btn`).forEach(btn => {
+    const cmd = btn.dataset.cmd;
+    if (!cmd) return;
+    btn.classList.toggle('active', document.queryCommandState(cmd));
+  });
+}
+
 function countWords(text) {
-  if (!text || !text.trim()) return 0;
-  const cjk = (text.match(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g) || []).length;
-  const stripped = text.replace(/[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff]/g, ' ');
-  const words = stripped.split(/\s+/).filter(w => w.length > 0).length;
-  return cjk + words;
+  const cleaned = text.replace(/[\n\r]/g, ' ').replace(/\s+/g, ' ').trim();
+  return cleaned.split(' ').filter(w => w.length > 0).length;
 }
 
 function updateWordCount() {
   const text = getEditorText();
-  const count = countWords(text);
-  document.getElementById('wordCount').textContent = count;
-  const progress = Math.min(count / 1000, 1);
-  document.getElementById('progressFill').style.width = (progress * 100) + '%';
-  document.getElementById('progressPercent').textContent = Math.round(progress * 100) + '%';
-  const card = document.getElementById('wordsCard');
-  const sub = document.getElementById('wordsSub');
-  const label = document.getElementById('progressLabel');
-  if (count >= 1000) {
-    card.classList.add('excellent');
-    sub.textContent = '太棒了！已达成目标';
-    label.textContent = '目标已达成！';
-  } else {
-    card.classList.remove('excellent');
-    sub.textContent = `还差 ${1000 - count} 字`;
-    label.textContent = '距离目标 1000 字';
-  }
+  const wc = countWords(text);
+  document.getElementById('wordCount').textContent = wc;
+  document.getElementById('wordsSub').textContent = wc > 0 ? `本次 ${wc} 字` : '开始写作吧';
+
+  const target = 1000;
+  const pct = Math.min(100, Math.round(wc / target * 100));
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressPercent').textContent = pct + '%';
+  document.getElementById('progressLabel').textContent = wc >= target ? '太棒了！' : `距离目标 ${target - wc} 字`;
 }
 
-// ===== Timer =====
-function formatTime(sec) {
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+document.querySelectorAll('.toolbar-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const cmd = btn.dataset.cmd;
+    const arg = btn.dataset.arg;
+    if (cmd === 'createLink') {
+      const url = arg || prompt('输入链接地址:');
+      if (url) document.execCommand(cmd, false, url);
+    } else if (arg) {
+      document.execCommand(cmd, false, arg);
+    } else {
+      document.execCommand(cmd, false, null);
+    }
+    const editor = btn.closest('.editor-wrapper') ? 'editor' : 'researchEditor';
+    document.getElementById(editor).focus();
+    updateToolbarState(editor);
+  });
+  btn.addEventListener('mousedown', e => e.preventDefault());
+});
+
+// ===== Timer Functions =====
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
 }
 
 function toggleTimer() {
@@ -1556,8 +1941,16 @@ async function resetToday() {
     resetPending = true;
     const btn = document.getElementById('btnReset');
     btn.textContent = '确认清空？';
-    btn.classList.remove('btn-secondary'); btn.classList.add('btn-danger');
-    setTimeout(() => { if (resetPending) { resetPending = false; btn.textContent = '重新开始'; btn.classList.remove('btn-danger'); btn.classList.add('btn-secondary'); } }, 3000);
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-danger');
+    setTimeout(() => {
+      if (resetPending) {
+        resetPending = false;
+        btn.textContent = '重新开始';
+        btn.classList.remove('btn-danger');
+        btn.classList.add('btn-secondary');
+      }
+    }, 3000);
     return;
   }
   resetPending = false;
@@ -1570,10 +1963,10 @@ async function resetToday() {
   const btn = document.getElementById('btnReset');
   btn.style.display = 'none';
   btn.textContent = '重新开始';
-  btn.classList.remove('btn-danger'); btn.classList.add('btn-secondary');
+  btn.classList.remove('btn-danger');
+  btn.classList.add('btn-secondary');
   document.getElementById('writingTitle').value = '';
   updateWordCount();
-  // Delete today's doc from Firestore
   if (todayDocId) {
     await fsDelete('today', todayDocId);
     todayDocId = null;
@@ -1581,7 +1974,7 @@ async function resetToday() {
   }
 }
 
-// ===== Auto-save (to Firestore) =====
+// ===== Auto-save =====
 async function autoSave() {
   const html = getEditorHTML();
   const text = getEditorText();
@@ -1589,7 +1982,6 @@ async function autoSave() {
   const date = todayKey();
   const wc = countWords(text);
 
-  // Save/update today's working doc
   const payload = { title, html, text, date, wordCount: wc, timerSeconds };
   if (todayDocId) {
     await fsUpdate('today', todayDocId, payload);
@@ -1597,11 +1989,10 @@ async function autoSave() {
     todayDocId = await fsAdd('today', payload);
   }
 
-  // Upsert auto-save in history
   await saveToHistory(text, html, title, 'auto');
 
   const ind = document.getElementById('saveIndicator');
-  ind.textContent = '\u2713 已自动保存';
+  ind.textContent = '✓ 已自动保存';
   ind.classList.add('show');
   setTimeout(() => ind.classList.remove('show'), 1500);
 }
@@ -1612,7 +2003,6 @@ async function manualSave() {
   const html = getEditorHTML();
   const title = document.getElementById('writingTitle').value.trim();
 
-  // Save today's doc
   const date = todayKey();
   const wc = countWords(text);
   const payload = { title, html, text, date, wordCount: wc, timerSeconds };
@@ -1626,7 +2016,7 @@ async function manualSave() {
   showSaveToast('已手动保存！', 'manual');
 
   const ind = document.getElementById('saveIndicator');
-  ind.textContent = '\u2713 已手动保存';
+  ind.textContent = '✓ 已手动保存';
   ind.classList.add('show');
   setTimeout(() => ind.classList.remove('show'), 2500);
 }
@@ -1637,12 +2027,14 @@ async function saveToHistory(text, html, title, saveType) {
   const wc = countWords(text);
 
   if (saveType === 'auto') {
-    // Find existing auto entry for today
     const existing = historyCache.find(h => h.date === date && h.saveType === 'auto');
     if (existing) {
       await fsUpdate('history', existing._docId, { title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
-      existing.title = title; existing.text = text; existing.html = html;
-      existing.wordCount = wc; existing.timerSeconds = timerSeconds;
+      existing.title = title;
+      existing.text = text;
+      existing.html = html;
+      existing.wordCount = wc;
+      existing.timerSeconds = timerSeconds;
     } else {
       const docId = await fsAdd('history', { date, title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
       historyCache.unshift({ _docId: docId, date, title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
@@ -1652,14 +2044,8 @@ async function saveToHistory(text, html, title, saveType) {
     historyCache.unshift({ _docId: docId, date, title, text, html, wordCount: wc, timerSeconds, saveType: 'manual' });
   }
 
-  // Update streak stats after each save
   if (typeof renderStreakStats === 'function') renderStreakStats();
 }
-
-// ===== Editor events =====
-document.querySelectorAll('.toolbar-btn').forEach(btn => {
-  btn.addEventListener('mousedown', e => e.preventDefault());
-});
 
 document.getElementById('editor').addEventListener('input', () => {
   updateWordCount();
@@ -1667,32 +2053,71 @@ document.getElementById('editor').addEventListener('input', () => {
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(autoSave, 1500);
 });
+
 document.getElementById('editor').addEventListener('keyup', () => updateToolbarState('editor'));
 document.getElementById('editor').addEventListener('mouseup', () => updateToolbarState('editor'));
 
-let researchSaveTimeout = null;
-document.getElementById('researchEditor').addEventListener('input', () => {
-  updateToolbarState('researchEditor');
-  clearTimeout(researchSaveTimeout);
-  researchSaveTimeout = setTimeout(autoSaveResearch, 1500);
-});
-document.getElementById('researchEditor').addEventListener('keyup', () => updateToolbarState('researchEditor'));
-document.getElementById('researchEditor').addEventListener('mouseup', () => updateToolbarState('researchEditor'));
-document.getElementById('researchNoteTitle').addEventListener('input', () => {
-  clearTimeout(researchSaveTimeout);
-  researchSaveTimeout = setTimeout(autoSaveResearch, 1500);
-});
-
-document.getElementById('editor').addEventListener('keydown', (e) => {
-  if (e.shiftKey && e.key === 'Enter') {
-    e.preventDefault();
-    const panel = document.getElementById('quickIdeaPanel');
-    if (!panel.classList.contains('open')) toggleQuickIdea();
-    else document.getElementById('quickIdeaInput').focus();
+// ===== Quick Ideas =====
+function toggleQuickIdea() {
+  const panel = document.getElementById('quickIdeaPanel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    setTimeout(() => document.getElementById('quickIdeaInput').focus(), 100);
   }
-});
+}
 
-// ===== Research Split =====
+async function addQuickIdea() {
+  const text = document.getElementById('quickIdeaInput').value.trim();
+  if (!text) return;
+
+  const docId = await fsAdd('ideas', { text, createdAt: new Date() });
+  ideasCache.unshift({ _docId: docId, text, createdAt: new Date() });
+
+  document.getElementById('quickIdeaInput').value = '';
+  updateIdeasBadge();
+  renderQuickIdeaRecent();
+  showSaveToast('想法已保存！', 'auto');
+}
+
+function renderQuickIdeaRecent() {
+  const recent = ideasCache.slice(0, 5);
+  const html = recent.map(idea => `
+    <div class="idea-tag">
+      ${idea.text.substring(0, 30)}...
+      <button class="idea-tag-remove" onclick="deleteIdea('${idea._docId}'); event.stopPropagation();">×</button>
+    </div>
+  `).join('');
+  document.getElementById('quickIdeaRecent').innerHTML = html;
+}
+
+async function deleteIdea(docId) {
+  await fsDelete('ideas', docId);
+  ideasCache = ideasCache.filter(i => i._docId !== docId);
+  updateIdeasBadge();
+  renderQuickIdeaRecent();
+  renderIdeas();
+}
+
+function updateIdeasBadge() {
+  document.getElementById('ideasBadge').textContent = ideasCache.length;
+}
+
+function renderIdeas() {
+  const html = ideasCache.map(idea => {
+    const d = idea.createdAt instanceof Date ? idea.createdAt : (idea.createdAt?.toDate ? idea.createdAt.toDate() : new Date());
+    const time = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return `
+      <div class="idea-card">
+        <div class="idea-time">${time}</div>
+        <div class="idea-text">${escapeHTML(idea.text)}</div>
+        <button class="idea-delete-btn" onclick="deleteIdea('${idea._docId}')">×</button>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('ideasContainer').innerHTML = html || '<p style="color:var(--text-tertiary);">还没有想法，快去记录一个吧！</p>';
+}
+
+// ===== Research Notes =====
 function toggleResearchSplit() {
   isResearchOpen = !isResearchOpen;
   const app = document.getElementById('app');
@@ -1713,6 +2138,22 @@ function toggleResearchSplit() {
   }
 }
 
+let researchSaveTimeout = null;
+
+document.getElementById('researchEditor').addEventListener('input', () => {
+  updateToolbarState('researchEditor');
+  clearTimeout(researchSaveTimeout);
+  researchSaveTimeout = setTimeout(autoSaveResearch, 1500);
+});
+
+document.getElementById('researchEditor').addEventListener('keyup', () => updateToolbarState('researchEditor'));
+document.getElementById('researchEditor').addEventListener('mouseup', () => updateToolbarState('researchEditor'));
+
+document.getElementById('researchNoteTitle').addEventListener('input', () => {
+  clearTimeout(researchSaveTimeout);
+  researchSaveTimeout = setTimeout(autoSaveResearch, 1500);
+});
+
 async function autoSaveResearch() {
   const titleEl = document.getElementById('researchNoteTitle');
   const bodyEl = document.getElementById('researchEditor');
@@ -1730,507 +2171,175 @@ async function autoSaveResearch() {
       researchCache[idx].bodyHTML = bodyHTML;
     }
   } else {
-    const docId = await fsAdd('research', { title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'auto' });
+    const docId = await fsAdd('research', { title: title || '未命名调研', body: bodyText, bodyHTML, createdAt: new Date() });
+    researchCache.unshift({ _docId: docId, title: title || '未命名调研', body: bodyText, bodyHTML, createdAt: new Date() });
     currentResearchAutoDocId = docId;
-    researchCache.unshift({ _docId: docId, title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'auto' });
-    updateResearchBadge();
   }
-
-  const ind = document.getElementById('researchSaveIndicator');
-  ind.textContent = '\u2713 已自动保存';
-  ind.classList.add('show');
-  setTimeout(() => ind.classList.remove('show'), 1500);
-  renderResearch();
+  updateResearchBadge();
 }
 
-async function saveResearchNote() {
-  const titleEl = document.getElementById('researchNoteTitle');
-  const bodyEl = document.getElementById('researchEditor');
-  const title = titleEl.value.trim();
-  const bodyHTML = bodyEl.innerHTML.trim();
-  const bodyText = bodyEl.innerText.trim();
-  if (!title && !bodyText) return;
+async function saveAndCloseResearch() {
+  await autoSaveResearch();
+  toggleResearchSplit();
+}
 
-  if (currentResearchAutoDocId) {
-    await fsUpdate('research', currentResearchAutoDocId, { title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'manual' });
-    const idx = researchCache.findIndex(i => i._docId === currentResearchAutoDocId);
-    if (idx >= 0) {
-      researchCache[idx].title = title || '未命名调研';
-      researchCache[idx].body = bodyText;
-      researchCache[idx].bodyHTML = bodyHTML;
-      researchCache[idx].saveType = 'manual';
-    }
-  } else {
-    const docId = await fsAdd('research', { title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'manual' });
-    researchCache.unshift({ _docId: docId, title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'manual' });
-  }
-
+async function deleteCurrentResearch() {
+  if (!currentResearchAutoDocId) return;
+  if (!confirm('确定删除这条调研笔记吗？')) return;
+  await fsDelete('research', currentResearchAutoDocId);
+  researchCache = researchCache.filter(i => i._docId !== currentResearchAutoDocId);
   currentResearchAutoDocId = null;
-  titleEl.value = '';
-  bodyEl.innerHTML = '';
-  showSaveToast('调研已手动保存！', 'manual');
-
-  const ind = document.getElementById('researchSaveIndicator');
-  ind.textContent = '\u2713 已手动保存';
-  ind.classList.add('show');
-  setTimeout(() => ind.classList.remove('show'), 2000);
-
+  toggleResearchSplit();
   updateResearchBadge();
   renderResearch();
-}
-
-// ===== Quick Idea =====
-function toggleQuickIdea() {
-  const panel = document.getElementById('quickIdeaPanel');
-  const btn = document.getElementById('quickIdeaBtn');
-  const isOpen = panel.classList.toggle('open');
-  btn.classList.toggle('active', isOpen);
-  if (isOpen) {
-    document.getElementById('quickIdeaInput').focus();
-    renderQuickIdeaRecent();
-  } else {
-    document.getElementById('editor').focus();
-  }
-}
-
-async function addQuickIdea() {
-  const input = document.getElementById('quickIdeaInput');
-  const text = input.value.trim();
-  if (!text) return;
-  const docId = await fsAdd('ideas', { text });
-  ideasCache.unshift({ _docId: docId, text, createdAt: new Date() });
-  input.value = '';
-  input.placeholder = '已保存！继续记录...';
-  setTimeout(() => { input.placeholder = '灵感稍纵即逝，快记下来...'; }, 1200);
-  updateIdeasBadge();
-  renderQuickIdeaRecent();
-  renderIdeas();
-}
-
-function renderQuickIdeaRecent() {
-  const recent = ideasCache.slice(0, 5);
-  const container = document.getElementById('quickIdeaRecent');
-  if (recent.length === 0) { container.innerHTML = ''; return; }
-  container.innerHTML = recent.map(i =>
-    `<span class="quick-idea-chip" title="${escapeHTML(i.text)}">${escapeHTML(i.text)}</span>`
-  ).join('');
-}
-
-// ===== Ideas =====
-async function addIdea() {
-  const input = document.getElementById('ideaInput');
-  const text = input.value.trim();
-  if (!text) return;
-  const docId = await fsAdd('ideas', { text });
-  ideasCache.unshift({ _docId: docId, text, createdAt: new Date() });
-  input.value = '';
-  renderIdeas();
-  updateIdeasBadge();
-}
-
-async function deleteIdea(docId) {
-  await fsDelete('ideas', docId);
-  ideasCache = ideasCache.filter(i => i._docId !== docId);
-  renderIdeas();
-  updateIdeasBadge();
-}
-
-function renderIdeas() {
-  const container = document.getElementById('ideasList');
-  if (ideasCache.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128161;</div><div class="empty-state-text">还没有记录任何想法</div><div class="empty-state-sub">灵感稍纵即逝，随时记录下来</div></div>`;
-    return;
-  }
-  container.innerHTML = ideasCache.map(idea => {
-    const d = idea.createdAt instanceof Date ? idea.createdAt : (idea.createdAt?.toDate ? idea.createdAt.toDate() : new Date());
-    const t = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    return `<div class="idea-item"><div class="idea-bullet"></div><div class="idea-content"><div class="idea-text">${escapeHTML(idea.text)}</div><div class="idea-meta">${t}</div></div><button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button></div>`;
-  }).join('');
-}
-
-function updateIdeasBadge() {
-  document.getElementById('ideasBadge').textContent = ideasCache.length;
-}
-
-// ===== Research (tab view) =====
-async function addResearch() {
-  const titleEl = document.getElementById('researchTitleInput');
-  const bodyEl = document.getElementById('researchBodyInput');
-  const title = titleEl.value.trim();
-  const body = bodyEl.value.trim();
-  if (!title && !body) return;
-  const docId = await fsAdd('research', { title: title || '未命名调研', body, saveType: 'manual' });
-  researchCache.unshift({ _docId: docId, title: title || '未命名调研', body, saveType: 'manual', createdAt: new Date(), updatedAt: new Date() });
-  titleEl.value = ''; bodyEl.value = '';
-  showSaveToast('调研已保存！', 'manual');
-  renderResearch();
-  updateResearchBadge();
-}
-
-async function deleteResearchById(docId) {
-  await fsDelete('research', docId);
-  researchCache = researchCache.filter(i => i._docId !== docId);
-  renderResearch();
-  updateResearchBadge();
-}
-
-function renderResearch() {
-  const container = document.getElementById('researchList');
-  if (researchCache.length === 0) {
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128269;</div><div class="empty-state-text">还没有调研记录</div><div class="empty-state-sub">把从 Claude 或其他地方获得的信息记录在这里</div></div>`;
-    return;
-  }
-  container.innerHTML = researchCache.map(item => {
-    const d = item.updatedAt instanceof Date ? item.updatedAt : (item.updatedAt?.toDate ? item.updatedAt.toDate() : new Date());
-    const t = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-    const preview = (item.body || '').substring(0, 100).replace(/\n/g, ' ');
-    const saveType = item.saveType || 'manual';
-    const saveBadge = saveType === 'manual'
-      ? '<span class="history-badge badge-manual" style="margin-right:6px;">手动保存</span>'
-      : '<span class="history-badge badge-auto" style="margin-right:6px;">自动保存</span>';
-    return `<div class="research-item" data-id="${item._docId}">
-      <div class="research-item-header" onclick="openResearchDetail('${item._docId}')">
-        <span class="research-item-title">${escapeHTML(item.title)}</span>
-        <div class="research-item-meta">
-          ${saveBadge}
-          <span>${t}</span>
-          <button class="research-item-delete" onclick="event.stopPropagation();deleteResearchInline('${item._docId}',this)" title="删除">&#10005;</button>
-        </div>
-      </div>
-      <div class="research-item-preview" onclick="openResearchDetail('${item._docId}')" style="padding:0 18px 12px 34px;font-size:13px;color:var(--text-secondary);cursor:pointer;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${escapeHTML(preview)}${preview.length >= 100 ? '...' : ''}</div>
-    </div>`;
-  }).join('');
 }
 
 function updateResearchBadge() {
   document.getElementById('researchBadge').textContent = researchCache.length;
 }
 
-// ===== History =====
-let historyFilter = 'all';
+function getItemDate(item) {
+  if (item.createdAt instanceof Date) return item.createdAt.toISOString().split('T')[0];
+  if (item.createdAt?.toDate) return item.createdAt.toDate().toISOString().split('T')[0];
+  if (typeof item.createdAt === 'string') return item.createdAt.split('T')[0];
+  return todayKey();
+}
 
+function renderResearch() {
+  const html = researchCache.map(item => {
+    const dateStr = getItemDate(item);
+    const preview = (item.body || item.bodyHTML || '').substring(0, 60).replace(/<[^>]*>/g, '');
+    return `
+      <div class="research-item" onclick="editResearch('${item._docId}')">
+        <div class="research-title">${escapeHTML(item.title)}</div>
+        <div class="research-meta">${dateStr}</div>
+        <div class="research-preview">${escapeHTML(preview)}</div>
+      </div>
+    `;
+  }).join('');
+  document.getElementById('researchList').innerHTML = html || '<p style="color:var(--text-tertiary);">还没有调研笔记。</p>';
+}
+
+function editResearch(docId) {
+  const item = researchCache.find(i => i._docId === docId);
+  if (!item) return;
+  currentResearchAutoDocId = docId;
+  document.getElementById('researchNoteTitle').value = item.title || '';
+  document.getElementById('researchEditor').innerHTML = item.bodyHTML || '';
+  toggleResearchSplit();
+}
+
+// ===== History View =====
 function filterHistory(filter) {
-  historyFilter = filter;
+  currentHistoryFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`.filter-btn[data-filter="${filter}"]`).classList.add('active');
+  document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
   renderHistory();
 }
 
 function renderHistory() {
-  let items = [...historyCache];
-  const container = document.getElementById('historyList');
-  if (historyFilter !== 'all') items = items.filter(h => h.saveType === historyFilter);
-  if (items.length === 0) {
-    const msg = historyFilter === 'all' ? '还没有写作记录' : (historyFilter === 'manual' ? '还没有手动保存的记录' : '还没有自动保存的记录');
-    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128218;</div><div class="empty-state-text">${msg}</div><div class="empty-state-sub">开始今天的写作，记录会自动保存在这里</div></div>`;
-    return;
-  }
-  container.innerHTML = items.map(entry => {
-    const dateLabel = formatHistoryDate(entry.date || todayKey());
-    const mins = Math.floor((entry.timerSeconds || 0) / 60);
-    const isExcellent = entry.wordCount >= 1000;
-    const preview = (entry.text || '').substring(0, 120).replace(/\n/g, ' ');
-    const saveType = entry.saveType || 'auto';
-    const saveLabel = saveType === 'manual'
-      ? '<span class="history-badge badge-manual">手动保存</span>'
-      : '<span class="history-badge badge-auto">自动保存</span>';
-    const d = entry.updatedAt instanceof Date ? entry.updatedAt : (entry.updatedAt?.toDate ? entry.updatedAt.toDate() : null);
-    const timeStr = d ? ` ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}` : '';
-    const titleStr = entry.title ? `<span style="font-weight:600;margin-right:6px;">${escapeHTML(entry.title)}</span> · ` : '';
-    return `<div class="history-item">
-      <div class="history-item-row">
-        <div class="history-item-content" onclick="openDetail('${entry._docId}')">
-          <div class="history-header">
-            <span class="history-date">${titleStr}${dateLabel}${timeStr}</span>
-            <div class="history-badges">
-              ${saveLabel}
-              ${isExcellent ? '<span class="history-badge badge-excellent">&#10024; 优秀</span>' : ''}
-              <span class="history-badge badge-words">${entry.wordCount || 0} 字</span>
-              <span class="history-badge badge-time">${mins} 分钟</span>
-            </div>
-          </div>
-          <div class="history-preview">${escapeHTML(preview)}...</div>
-        </div>
-        <div class="history-item-actions">
-          <button class="history-delete-btn" onclick="event.stopPropagation();deleteHistoryInline('${entry._docId}',this)">删除</button>
-        </div>
+  let filtered = historyCache;
+  if (currentHistoryFilter === 'manual') filtered = filtered.filter(h => h.saveType === 'manual');
+  else if (currentHistoryFilter === 'auto') filtered = filtered.filter(h => h.saveType === 'auto');
+
+  const html = filtered.map((entry, idx) => {
+    const date = entry.date || '未知';
+    const title = entry.title || '无标题';
+    const saveType = entry.saveType === 'manual' ? '手动' : '自动';
+    return `
+      <div class="history-item" onclick="openHistoryDetail(${idx})">
+        <div class="history-date">${date}</div>
+        <div class="history-title">${escapeHTML(title)}</div>
+        <div class="history-meta">${saveType} · ${entry.wordCount || 0} 字</div>
       </div>
-    </div>`;
+    `;
   }).join('');
+  document.getElementById('historyList').innerHTML = html || '<p style="color:var(--text-tertiary);">还没有写作记录。</p>';
 }
 
-// ===== Slider Panel =====
-function openDetail(docId) {
-  const entry = historyCache.find(h => h._docId === docId);
+function openHistoryDetail(idx) {
+  let filtered = historyCache;
+  if (currentHistoryFilter === 'manual') filtered = filtered.filter(h => h.saveType === 'manual');
+  else if (currentHistoryFilter === 'auto') filtered = filtered.filter(h => h.saveType === 'auto');
+
+  const entry = filtered[idx];
   if (!entry) return;
-  currentModalDocId = docId;
-  currentResearchId = null;
-  const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
-  const titlePart = entry.title ? entry.title + ' — ' : '';
-  document.getElementById('sliderTitle').textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
-  const bodyEl = document.getElementById('sliderBody');
-  if (entry.html) bodyEl.innerHTML = entry.html;
-  else bodyEl.textContent = entry.text;
-  buildTOC(bodyEl);
-  const deleteBtn = document.getElementById('btnDeleteHistory');
-  deleteBtn.onclick = function() { deleteHistoryEntry(); };
-  deleteBtn.textContent = '删除';
-  document.getElementById('sliderOverlay').classList.add('active');
-  document.getElementById('sliderPanel').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
 
-function buildTOC(contentEl) {
-  const headings = contentEl.querySelectorAll('h1, h2, h3, h4, h5, h6');
-  const tocContainer = document.getElementById('sliderToc');
-  const tocList = document.getElementById('tocList');
-  tocList.innerHTML = '';
-  if (headings.length === 0) { tocContainer.classList.add('empty'); return; }
-  tocContainer.classList.remove('empty');
-  headings.forEach((heading, i) => {
-    const tag = heading.tagName.toLowerCase();
-    const text = heading.textContent.trim();
-    if (!text) return;
-    heading.id = 'toc-heading-' + i;
-    const li = document.createElement('li');
-    li.className = 'toc-item toc-' + tag;
-    li.innerHTML = `<span class="toc-tag">${tag.toUpperCase()}</span><span class="toc-text">${escapeHTML(text)}</span>`;
-    li.onclick = () => heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    tocList.appendChild(li);
-  });
+  const date = entry.date || '未知';
+  const title = entry.title || '无标题';
+  const saveType = entry.saveType === 'manual' ? '手动保存' : '自动保存';
+  const mins = Math.floor((entry.timerSeconds || 0) / 60);
+
+  let content = `
+    <div class="slider-item">
+      <div class="slider-item-date">${date}</div>
+      <div class="slider-item-title">${escapeHTML(title)}</div>
+      <div class="slider-item-meta">${saveType} · ${entry.wordCount || 0} 字 · ${mins} 分钟</div>
+      <div class="slider-item-content">${entry.html || (entry.text ? escapeHTML(entry.text) : '（无内容）')}</div>
+    </div>
+  `;
+
+  document.getElementById('sliderTitle').textContent = title;
+  document.getElementById('sliderContent').innerHTML = content;
+  document.getElementById('sliderOverlay').classList.add('active');
+  document.getElementById('sliderPanel').classList.add('active');
 }
 
 function closeSlider() {
   document.getElementById('sliderOverlay').classList.remove('active');
-  document.getElementById('sliderPanel').classList.remove('open');
-  document.body.style.overflow = '';
-  currentModalDocId = null;
-  currentResearchId = null;
-  deleteConfirmPending = false;
-  const btn = document.getElementById('btnDeleteHistory');
-  if (btn) { btn.textContent = '删除'; btn.style.fontWeight = ''; delete btn.dataset.confirming; }
+  document.getElementById('sliderPanel').classList.remove('active');
 }
 
-let deleteConfirmPending = false;
-async function deleteHistoryEntry() {
-  if (!currentModalDocId) return;
-  const btn = document.getElementById('btnDeleteHistory');
-  if (!deleteConfirmPending) {
-    deleteConfirmPending = true;
-    btn.textContent = '确认删除？'; btn.style.fontWeight = '600';
-    setTimeout(() => { if (deleteConfirmPending) { deleteConfirmPending = false; btn.textContent = '删除'; btn.style.fontWeight = ''; } }, 3000);
-    return;
-  }
-  deleteConfirmPending = false;
-  btn.textContent = '删除'; btn.style.fontWeight = '';
-  await fsDelete('history', currentModalDocId);
-  historyCache = historyCache.filter(h => h._docId !== currentModalDocId);
-  closeSlider();
-  renderHistory();
-}
-
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSlider(); });
-
-// ===== Inline Delete (History) =====
-async function deleteHistoryInline(docId, btn) {
-  if (btn.dataset.confirming) {
-    await fsDelete('history', docId);
-    historyCache = historyCache.filter(h => h._docId !== docId);
-    renderHistory();
-    return;
-  }
-  btn.dataset.confirming = 'true';
-  btn.textContent = '确认？';
-  btn.classList.add('confirming');
-  setTimeout(() => {
-    if (btn.dataset.confirming) {
-      delete btn.dataset.confirming;
-      btn.textContent = '删除';
-      btn.classList.remove('confirming');
-    }
-  }, 3000);
-}
-
-// ===== Inline Delete (Research) =====
-async function deleteResearchInline(docId, btn) {
-  if (btn.dataset.confirming) {
-    await deleteResearchById(docId);
-    return;
-  }
-  btn.dataset.confirming = 'true';
-  btn.textContent = '确认？';
-  btn.style.color = 'var(--red)';
-  btn.style.fontWeight = '600';
-  setTimeout(() => {
-    if (btn.dataset.confirming) {
-      delete btn.dataset.confirming;
-      btn.innerHTML = '&#10005;';
-      btn.style.color = '';
-      btn.style.fontWeight = '';
-    }
-  }, 3000);
-}
-
-// ===== Research Detail Slider =====
-let currentResearchId = null;
-function openResearchDetail(docId) {
-  const item = researchCache.find(i => i._docId === docId);
-  if (!item) return;
-  currentResearchId = docId;
-  currentModalDocId = null;
-  document.getElementById('sliderTitle').textContent = item.title || '未命名调研';
-  const bodyEl = document.getElementById('sliderBody');
-  if (item.bodyHTML) bodyEl.innerHTML = item.bodyHTML;
-  else bodyEl.textContent = item.body;
-  buildTOC(bodyEl);
-  const deleteBtn = document.getElementById('btnDeleteHistory');
-  deleteBtn.onclick = function() { deleteResearchFromSlider(); };
-  deleteBtn.textContent = '删除';
-  document.getElementById('sliderOverlay').classList.add('active');
-  document.getElementById('sliderPanel').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-async function deleteResearchFromSlider() {
-  if (!currentResearchId) return;
-  const btn = document.getElementById('btnDeleteHistory');
-  if (!btn.dataset.confirming) {
-    btn.dataset.confirming = 'true';
-    btn.textContent = '确认删除？'; btn.style.fontWeight = '600';
-    setTimeout(() => { if (btn.dataset.confirming) { delete btn.dataset.confirming; btn.textContent = '删除'; btn.style.fontWeight = ''; } }, 3000);
-    return;
-  }
-  delete btn.dataset.confirming;
-  btn.textContent = '删除'; btn.style.fontWeight = '';
-  await deleteResearchById(currentResearchId);
-  currentResearchId = null;
-  closeSlider();
-}
-
-// ===== Writing Title =====
-function onTitleChange() {
-  clearTimeout(saveTimeout);
-  saveTimeout = setTimeout(autoSave, 1500);
-}
-
-// ===== Save Toast =====
-let toastTimer = null;
-function showSaveToast(message, type) {
-  const toast = document.getElementById('saveToast');
-  clearTimeout(toastTimer);
-  toast.textContent = '\u2713 ' + message;
-  toast.className = 'save-toast ' + type;
-  void toast.offsetWidth;
-  toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), type === 'manual' ? 2500 : 1500);
-}
-
-// ===== Export to Markdown =====
-let exportSelections = { history: new Set(), ideas: new Set(), research: new Set() };
-
-function getItemDate(item) {
-  const d = item.date ? item.date :
-    (item.updatedAt instanceof Date ? item.updatedAt :
-    (item.updatedAt?.toDate ? item.updatedAt.toDate() :
-    (item.createdAt instanceof Date ? item.createdAt :
-    (item.createdAt?.toDate ? item.createdAt.toDate() : new Date()))));
-  if (typeof d === 'string') return d;
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-
-function getItemDisplayDate(item) {
-  const d = getItemDate(item);
-  if (typeof d === 'string') {
-    const [y, m, day] = d.split('-');
-    return `${parseInt(m)}月${parseInt(day)}日`;
-  }
-  return '';
-}
-
+// ===== Export Modal =====
 function openExportModal() {
-  // Reset selections — select all by default
-  exportSelections.history = new Set(historyCache.map(h => h._docId));
-  exportSelections.ideas = new Set(ideasCache.map(i => i._docId));
-  exportSelections.research = new Set(researchCache.map(r => r._docId));
-
+  exportSelections = { history: new Set(), ideas: new Set(), research: new Set() };
   renderExportOptions();
   document.getElementById('exportOverlay').classList.add('active');
 }
 
 function renderExportOptions() {
-  const container = document.getElementById('exportOptions');
+  const cats = [
+    { id: 'history', label: '写作记录', data: historyCache },
+    { id: 'ideas', label: '随机想法', data: ideasCache },
+    { id: 'research', label: '调研汇总', data: researchCache }
+  ];
+
   let html = '';
+  cats.forEach(cat => {
+    const allChecked = cat.data.length > 0 && cat.data.every(item => exportSelections[cat.id].has(item._docId));
+    const someChecked = cat.data.some(item => exportSelections[cat.id].has(item._docId));
+    const indeterminate = someChecked && !allChecked;
 
-  // --- History ---
-  const hChecked = exportSelections.history.size === historyCache.length && historyCache.length > 0;
-  const hPartial = exportSelections.history.size > 0 && exportSelections.history.size < historyCache.length;
-  html += `<div class="export-category" id="exportCatHistory">
-    <div class="export-category-header" onclick="toggleExportCategory('history')">
-      <input type="checkbox" ${hChecked ? 'checked' : ''} ${hPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('history', this.checked)">
-      <span class="export-category-label">写作记录</span>
-      <span class="export-category-count">${exportSelections.history.size}/${historyCache.length} 篇</span>
-      <span class="export-category-arrow">&#9654;</span>
-    </div>
-    <div class="export-items">`;
-  historyCache.forEach(entry => {
-    const title = entry.title || '无标题';
-    const date = getItemDisplayDate(entry);
-    const checked = exportSelections.history.has(entry._docId) ? 'checked' : '';
-    html += `<label class="export-item">
-      <input type="checkbox" ${checked} onchange="toggleExportItem('history','${entry._docId}',this.checked)">
-      <span class="export-item-title">${escapeHTML(title)}</span>
-      <span class="export-item-date">${date}</span>
-    </label>`;
+    html += `
+      <div class="export-category" id="exportCat${cat.label.charAt(0).toUpperCase() + cat.label.slice(1)}">
+        <div class="export-category-header" onclick="toggleExportCategory('${cat.id}')">
+          <input type="checkbox" ${allChecked ? 'checked' : ''} ${indeterminate ? 'indeterminate' : ''}
+            onchange="toggleCategoryAll('${cat.id}', this.checked)" onclick="event.stopPropagation();">
+          <span class="export-category-title">${cat.label}</span>
+          <span class="export-category-count">${cat.data.length}</span>
+        </div>
+        <div class="export-items">
+    `;
+
+    cat.data.forEach(item => {
+      const label = item.title || item.text || '无标题';
+      const checked = exportSelections[cat.id].has(item._docId);
+      html += `
+        <div class="export-item">
+          <input type="checkbox" ${checked ? 'checked' : ''}
+            onchange="toggleExportItem('${cat.id}', '${item._docId}', this.checked)">
+          <span>${escapeHTML(label.substring(0, 50))}</span>
+        </div>
+      `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
   });
-  html += `</div></div>`;
 
-  // --- Ideas ---
-  const iChecked = exportSelections.ideas.size === ideasCache.length && ideasCache.length > 0;
-  const iPartial = exportSelections.ideas.size > 0 && exportSelections.ideas.size < ideasCache.length;
-  html += `<div class="export-category" id="exportCatIdeas">
-    <div class="export-category-header" onclick="toggleExportCategory('ideas')">
-      <input type="checkbox" ${iChecked ? 'checked' : ''} ${iPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('ideas', this.checked)">
-      <span class="export-category-label">随机想法</span>
-      <span class="export-category-count">${exportSelections.ideas.size}/${ideasCache.length} 条</span>
-      <span class="export-category-arrow">&#9654;</span>
-    </div>
-    <div class="export-items">`;
-  ideasCache.forEach(idea => {
-    const preview = idea.text.length > 40 ? idea.text.substring(0, 40) + '...' : idea.text;
-    const date = getItemDisplayDate(idea);
-    const checked = exportSelections.ideas.has(idea._docId) ? 'checked' : '';
-    html += `<label class="export-item">
-      <input type="checkbox" ${checked} onchange="toggleExportItem('ideas','${idea._docId}',this.checked)">
-      <span class="export-item-title">${escapeHTML(preview)}</span>
-      <span class="export-item-date">${date}</span>
-    </label>`;
-  });
-  html += `</div></div>`;
-
-  // --- Research ---
-  const rChecked = exportSelections.research.size === researchCache.length && researchCache.length > 0;
-  const rPartial = exportSelections.research.size > 0 && exportSelections.research.size < researchCache.length;
-  html += `<div class="export-category" id="exportCatResearch">
-    <div class="export-category-header" onclick="toggleExportCategory('research')">
-      <input type="checkbox" ${rChecked ? 'checked' : ''} ${rPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('research', this.checked)">
-      <span class="export-category-label">调研笔记</span>
-      <span class="export-category-count">${exportSelections.research.size}/${researchCache.length} 篇</span>
-      <span class="export-category-arrow">&#9654;</span>
-    </div>
-    <div class="export-items">`;
-  researchCache.forEach(item => {
-    const title = item.title || '未命名调研';
-    const date = getItemDisplayDate(item);
-    const checked = exportSelections.research.has(item._docId) ? 'checked' : '';
-    html += `<label class="export-item">
-      <input type="checkbox" ${checked} onchange="toggleExportItem('research','${item._docId}',this.checked)">
-      <span class="export-item-title">${escapeHTML(title)}</span>
-      <span class="export-item-date">${date}</span>
-    </label>`;
-  });
-  html += `</div></div>`;
-
-  container.innerHTML = html;
+  document.getElementById('exportContent').innerHTML = html;
   updateExportCount();
 }
 
@@ -2247,7 +2356,6 @@ function toggleCategoryAll(cat, checked) {
     exportSelections[cat].clear();
   }
   renderExportOptions();
-  // Re-expand the category after re-render
   const el = document.getElementById('exportCat' + cat.charAt(0).toUpperCase() + cat.slice(1));
   if (el) el.classList.add('expanded');
 }
@@ -2256,9 +2364,7 @@ function toggleExportItem(cat, docId, checked) {
   if (checked) exportSelections[cat].add(docId);
   else exportSelections[cat].delete(docId);
   updateExportCount();
-  // Update category header checkbox state
   renderExportOptions();
-  // Keep category expanded
   const el = document.getElementById('exportCat' + cat.charAt(0).toUpperCase() + cat.slice(1));
   if (el) el.classList.add('expanded');
 }
@@ -2282,7 +2388,10 @@ function htmlToMarkdown(html) {
   div.innerHTML = html;
   let md = '';
   function walk(node) {
-    if (node.nodeType === 3) { md += node.textContent; return; }
+    if (node.nodeType === 3) {
+      md += node.textContent;
+      return;
+    }
     if (node.nodeType !== 1) return;
     const tag = node.tagName;
     if (/^H[1-6]$/.test(tag)) {
@@ -2317,7 +2426,6 @@ function htmlToMarkdown(html) {
 function doExport() {
   const files = [];
 
-  // Export selected history items
   historyCache.forEach(entry => {
     if (!exportSelections.history.has(entry._docId)) return;
     const date = entry.date || todayKey();
@@ -2332,7 +2440,6 @@ function doExport() {
     files.push({ filename, content });
   });
 
-  // Export selected ideas
   const selectedIdeas = ideasCache.filter(i => exportSelections.ideas.has(i._docId));
   if (selectedIdeas.length > 0) {
     let content = `---\ntitle: "随机想法"\ndate: ${todayKey()}\ntype: ideas\n---\n\n# 随机想法\n\n`;
@@ -2344,7 +2451,6 @@ function doExport() {
     files.push({ filename: `随机想法_${todayKey()}.md`, content });
   }
 
-  // Export selected research items
   researchCache.forEach(item => {
     if (!exportSelections.research.has(item._docId)) return;
     const dateStr = getItemDate(item);
@@ -2361,7 +2467,6 @@ function doExport() {
     return;
   }
 
-  // Download each file individually
   files.forEach(f => downloadFile(f.filename, f.content));
 
   showSaveToast(`已导出 ${files.length} 个文件！`, 'manual');
@@ -2380,6 +2485,15 @@ function downloadFile(filename, content) {
   URL.revokeObjectURL(url);
 }
 
+// ===== Toast =====
+function showSaveToast(msg, type) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + type;
+  toast.style.display = 'block';
+  setTimeout(() => toast.style.display = 'none', 3000);
+}
+
 // ===== Utility =====
 function escapeHTML(str) {
   const div = document.createElement('div');
@@ -2387,17 +2501,31 @@ function escapeHTML(str) {
   return div.innerHTML;
 }
 
-// ===== Init (after login) =====
+// ===== Auth State Handler =====
+auth.onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appLayout').classList.add('visible');
+
+    // Set user info in sidebar
+    document.getElementById('sidebarUserName').textContent = user.displayName || user.email || 'User';
+    document.getElementById('sidebarUserEmail').textContent = user.email || '';
+    document.getElementById('sidebarUserAvatar').src = user.photoURL || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22%3E%3Ctext x=%2212%22 y=%2718%22 text-anchor=%22middle%22 font-size=%2212%22 fill=%22%23999%22%3EU%3C/text%3E%3C/svg%3E';
+
+    initApp();
+  } else {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('appLayout').classList.remove('visible');
+  }
+});
+
+// ===== Init =====
 async function initApp() {
-  // Load ideas
   ideasCache = await fsGet('ideas');
-
-  // Load research
   researchCache = await fsGet('research');
-
-  // Load history
   historyCache = await fsGet('history');
-  // Sort by date desc, then manual before auto
   historyCache.sort((a, b) => {
     if (a.date !== b.date) return (b.date || '').localeCompare(a.date || '');
     if (a.saveType === 'manual' && b.saveType !== 'manual') return -1;
@@ -2405,7 +2533,6 @@ async function initApp() {
     return 0;
   });
 
-  // Load today's working doc
   const todaySnap = await userCol('today').where('date', '==', todayKey()).limit(1).get();
   if (!todaySnap.empty) {
     const doc = todaySnap.docs[0];
@@ -2422,40 +2549,32 @@ async function initApp() {
   updateIdeasBadge();
   updateResearchBadge();
   renderIdeas();
-
-  // Render streak stats
   renderStreakStats();
 }
 
-// ===== Streak / Calendar Stats =====
+// ===== Streak & Calendar =====
 function renderStreakStats() {
   const year = new Date().getFullYear();
   document.getElementById('streakYear').textContent = year + '年';
 
-  // Build a map: date -> total word count (aggregate all history entries per day)
   const dayMap = {};
   historyCache.forEach(entry => {
     const date = entry.date;
     if (!date || !date.startsWith(String(year))) return;
     const wc = entry.wordCount || 0;
-    // Use max word count per day (manual save is usually the best snapshot)
     if (!dayMap[date] || wc > dayMap[date]) {
       dayMap[date] = wc;
     }
   });
 
-  // Total words this year
   let totalWords = 0;
   Object.values(dayMap).forEach(wc => totalWords += wc);
 
-  // Writing days
   const writingDays = Object.keys(dayMap).length;
 
-  // Current streak (consecutive days ending today or yesterday)
   let streak = 0;
   const today = new Date();
   let checkDate = new Date(today);
-  // Check if today has data; if not, start from yesterday
   const todayStr = todayKey();
   if (!dayMap[todayStr]) {
     checkDate.setDate(checkDate.getDate() - 1);
@@ -2470,12 +2589,10 @@ function renderStreakStats() {
     }
   }
 
-  // Update stats display
   document.getElementById('statTotalWords').textContent = totalWords.toLocaleString('zh-CN');
   document.getElementById('statWritingDays').textContent = writingDays;
   document.getElementById('statStreak').textContent = streak;
 
-  // Render calendar heatmap
   renderCalendar(dayMap, year);
 }
 
@@ -2484,7 +2601,6 @@ function renderCalendar(dayMap, year) {
   const monthsRow = document.getElementById('calendarMonths');
   const today = new Date();
 
-  // Start from Jan 1st
   const startDate = new Date(year, 0, 1);
   const startDay = startDate.getDay();
   const adjustedStart = new Date(startDate);
@@ -2550,7 +2666,6 @@ function renderCalendar(dayMap, year) {
 
   grid.innerHTML = weeksHtml;
 
-  // Month labels
   const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   const dayWidth = 16;
   let monthsHtml = '<span style="width:20px;flex-shrink:0;"></span>';
