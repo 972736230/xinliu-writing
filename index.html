@@ -2557,14 +2557,24 @@ function renderStreakStats() {
   const year = new Date().getFullYear();
   document.getElementById('streakYear').textContent = year + '年';
 
-  const dayMap = {};
+  // Group by (date, title) → take MAX per group → SUM groups per day
+  // This correctly handles: re-saves of same article (MAX) + multiple articles per day (SUM)
+  const dayTitleMap = {};
   historyCache.forEach(entry => {
     const date = entry.date;
     if (!date || !date.startsWith(String(year))) return;
     const wc = entry.wordCount || 0;
-    if (!dayMap[date] || wc > dayMap[date]) {
-      dayMap[date] = wc;
+    const title = entry.title || '_untitled_';
+    const key = date + '|||' + title;
+    if (!dayTitleMap[key] || wc > dayTitleMap[key]) {
+      dayTitleMap[key] = wc;
     }
+  });
+
+  const dayMap = {};
+  Object.keys(dayTitleMap).forEach(key => {
+    const date = key.split('|||')[0];
+    dayMap[date] = (dayMap[date] || 0) + dayTitleMap[key];
   });
 
   let totalWords = 0;
