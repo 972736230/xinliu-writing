@@ -1020,6 +1020,39 @@
 
   .export-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
+  /* ===== Undo Toast ===== */
+  .undo-toast {
+    position: fixed; bottom: 72px; right: 24px; z-index: 998;
+    background: #1A1A18; color: #fff;
+    padding: 12px 16px; border-radius: var(--radius-sm);
+    display: none; align-items: center; gap: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    font-size: 14px; min-width: 220px;
+    animation: undoSlideIn 0.2s ease;
+  }
+  @keyframes undoSlideIn {
+    from { transform: translateX(30px); opacity: 0; }
+    to   { transform: translateX(0);    opacity: 1; }
+  }
+  .undo-toast-label { flex: 1; }
+  .undo-toast-btn {
+    font-size: 13px; font-weight: 700; color: #8BC34A;
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    white-space: nowrap;
+  }
+  .undo-toast-btn:hover { text-decoration: underline; }
+  .undo-toast-dismiss {
+    font-size: 16px; color: rgba(255,255,255,0.4);
+    background: none; border: none; cursor: pointer; padding: 2px 4px;
+    line-height: 1;
+  }
+  .undo-toast-dismiss:hover { color: rgba(255,255,255,0.8); }
+  .undo-progress {
+    position: absolute; bottom: 0; left: 0; height: 2px;
+    background: #8BC34A; border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    transition: width linear;
+  }
+
   /* ===== Save Toast ===== */
   .save-toast {
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
@@ -1427,6 +1460,14 @@
 
 <!-- Save Toast -->
 <div class="save-toast" id="saveToast"></div>
+
+<!-- Undo Toast -->
+<div class="undo-toast" id="undoToast" style="position:fixed;bottom:72px;right:24px;z-index:998;">
+  <span class="undo-toast-label" id="undoToastLabel">已删除</span>
+  <button class="undo-toast-btn" onclick="undoDelete()">撤销</button>
+  <button class="undo-toast-dismiss" onclick="dismissUndo()">&#10005;</button>
+  <div class="undo-progress" id="undoProgress"></div>
+</div>
 
 <!-- ===== Firebase SDK ===== -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1984,11 +2025,22 @@ async function addIdea() {
   updateIdeasBadge();
 }
 
-async function deleteIdea(docId) {
-  await fsDelete('ideas', docId);
-  ideasCache = ideasCache.filter(i => i._docId !== docId);
-  renderIdeas();
-  updateIdeasBadge();
+async function deleteIdea(docId, btn) {
+  if (!btn.dataset.confirming) {
+    btn.dataset.confirming = 'true';
+    btn.textContent = '确认？';
+    btn.style.color = 'var(--red)'; btn.style.fontWeight = '600';
+    setTimeout(() => {
+      if (btn.dataset.confirming) {
+        delete btn.dataset.confirming;
+        btn.innerHTML = '&#10005;';
+        btn.style.color = ''; btn.style.fontWeight = '';
+      }
+    }, 3000);
+    return;
+  }
+  delete btn.dataset.confirming;
+  _softDelete('ideas', docId, '想法');
 }
 
 async function toggleIdeaDone(docId) {
@@ -2097,7 +2149,7 @@ function renderIdeas() {
       <div class="idea-right">
         <div class="idea-action-btns">
           <button class="idea-edit-btn" onclick="startEditIdea('${idea._docId}')" title="编辑">&#9998;</button>
-          <button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button>
+          <button class="idea-delete" onclick="deleteIdea('${idea._docId}',this)" title="删除">&#10005;</button>
         </div>
         <div class="idea-meta">${t}</div>
       </div>
@@ -2599,10 +2651,12 @@ function renderVersionHistory(versions) {
     const actualIdx = versions.length - 1 - idx; // index in original array (oldest-first)
     const vNum = versions.length - idx; // display number (newest = highest)
     const dateStr = v.savedAt ? formatVersionDate(v.savedAt) : '—';
-    const preview = (v.text || v.html || '').replace(/<[^>]*>/g, '').substring(0, 60).trim();
-    const bodyContent = v.html
-      ? `<div style="font-size:13px;line-height:1.7;color:var(--text-secondary)">${v.html}</div>`
-      : `<div style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text-secondary)">${escapeHTML(v.text || '')}</div>`;
+    const richHtml = v.html || v.bodyHTML || '';
+    const plainText = v.text || v.body || '';
+    const preview = (plainText || richHtml).replace(/<[^>]*>/g, '').substring(0, 60).trim();
+    const bodyContent = richHtml
+      ? `<div style="font-size:13px;line-height:1.7;color:var(--text-secondary)">${richHtml}</div>`
+      : `<div style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--text-secondary)">${escapeHTML(plainText)}</div>`;
     return `
       <div class="version-item" id="vitem-${idx}">
         <div class="version-item-header" onclick="toggleVersionItem(${idx})">
@@ -2705,6 +2759,82 @@ function closeSlider() {
   document.getElementById('versionHistory').className = 'version-history';
 }
 
+// ===== Undo Delete System =====
+let _undoState = null;
+const UNDO_DURATION = 5000;
+
+function showUndoToast(label, colName, docId, item, insertIdx) {
+  // Commit any previously pending delete first
+  if (_undoState) {
+    clearTimeout(_undoState.timer);
+    fsDelete(_undoState.colName, _undoState.docId);
+    _undoState = null;
+  }
+  const timer = setTimeout(() => {
+    if (_undoState && _undoState.docId === docId) {
+      fsDelete(_undoState.colName, _undoState.docId);
+      _undoState = null;
+      hideUndoToast();
+    }
+  }, UNDO_DURATION);
+  _undoState = { colName, docId, item, insertIdx, timer };
+  document.getElementById('undoToastLabel').textContent = label + '已删除';
+  const toast = document.getElementById('undoToast');
+  toast.style.display = 'flex';
+  // Animate progress bar
+  const bar = document.getElementById('undoProgress');
+  bar.style.transition = 'none';
+  bar.style.width = '100%';
+  requestAnimationFrame(() => {
+    bar.style.transition = `width ${UNDO_DURATION}ms linear`;
+    bar.style.width = '0%';
+  });
+}
+
+function undoDelete() {
+  if (!_undoState) return;
+  clearTimeout(_undoState.timer);
+  const { colName, item, insertIdx } = _undoState;
+  _undoState = null;
+  hideUndoToast();
+  if (colName === 'ideas') {
+    ideasCache.splice(insertIdx, 0, item);
+    renderIdeas(); updateIdeasBadge();
+  } else if (colName === 'history') {
+    historyCache.splice(insertIdx, 0, item);
+    renderHistory(); updateHistoryBadge();
+  } else if (colName === 'research') {
+    researchCache.splice(insertIdx, 0, item);
+    renderResearch(); updateResearchBadge();
+  }
+  showSaveToast('已撤销删除', 'success');
+}
+
+function dismissUndo() {
+  if (!_undoState) return;
+  clearTimeout(_undoState.timer);
+  fsDelete(_undoState.colName, _undoState.docId);
+  _undoState = null;
+  hideUndoToast();
+}
+
+function hideUndoToast() {
+  document.getElementById('undoToast').style.display = 'none';
+}
+
+function _softDelete(colName, docId, label) {
+  let cache, renderFn, badgeFn;
+  if (colName === 'ideas')   { cache = ideasCache;   renderFn = renderIdeas;   badgeFn = updateIdeasBadge;   }
+  if (colName === 'history') { cache = historyCache;  renderFn = renderHistory; badgeFn = updateHistoryBadge; }
+  if (colName === 'research'){ cache = researchCache; renderFn = renderResearch; badgeFn = updateResearchBadge; }
+  const idx = cache.findIndex(i => i._docId === docId);
+  if (idx < 0) return;
+  const item = cache.splice(idx, 1)[0];
+  renderFn(); if (badgeFn) badgeFn();
+  showUndoToast(label, colName, docId, item, idx);
+}
+
+// ===== Delete: History Entry (from slider) =====
 let deleteConfirmPending = false;
 async function deleteHistoryEntry() {
   if (!currentModalDocId) return;
@@ -2717,10 +2847,9 @@ async function deleteHistoryEntry() {
   }
   deleteConfirmPending = false;
   btn.textContent = '删除'; btn.style.fontWeight = '';
-  await fsDelete('history', currentModalDocId);
-  historyCache = historyCache.filter(h => h._docId !== currentModalDocId);
+  const docId = currentModalDocId;
   closeSlider();
-  renderHistory();
+  _softDelete('history', docId, '写作记录');
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSlider(); });
@@ -2728,9 +2857,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSlider(
 // ===== Inline Delete (History) =====
 async function deleteHistoryInline(docId, btn) {
   if (btn.dataset.confirming) {
-    await fsDelete('history', docId);
-    historyCache = historyCache.filter(h => h._docId !== docId);
-    renderHistory();
+    delete btn.dataset.confirming;
+    _softDelete('history', docId, '写作记录');
     return;
   }
   btn.dataset.confirming = 'true';
@@ -2748,7 +2876,8 @@ async function deleteHistoryInline(docId, btn) {
 // ===== Inline Delete (Research) =====
 async function deleteResearchInline(docId, btn) {
   if (btn.dataset.confirming) {
-    await deleteResearchById(docId);
+    delete btn.dataset.confirming;
+    _softDelete('research', docId, '调研');
     return;
   }
   btn.dataset.confirming = 'true';
@@ -2816,9 +2945,10 @@ async function deleteResearchFromSlider() {
   }
   delete btn.dataset.confirming;
   btn.textContent = '删除'; btn.style.fontWeight = '';
-  await deleteResearchById(currentResearchId);
+  const docId = currentResearchId;
   currentResearchId = null;
   closeSlider();
+  _softDelete('research', docId, '调研');
 }
 
 // ===== Writing Title =====
