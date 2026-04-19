@@ -860,6 +860,12 @@
   }
   .version-date { font-size: 12px; color: var(--text-tertiary); flex: 1; }
   .version-preview-text { font-size: 12px; color: var(--text-secondary); flex: 2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .version-delete-btn {
+    background: none; border: none; cursor: pointer; padding: 2px 6px;
+    font-size: 12px; color: var(--text-tertiary); border-radius: 4px;
+    transition: all var(--transition); flex-shrink: 0; line-height: 1;
+  }
+  .version-delete-btn:hover { background: var(--red-light); color: var(--red); }
   .version-item-toggle { font-size: 10px; color: var(--text-tertiary); transition: transform var(--transition); flex-shrink: 0; }
   .version-item.open .version-item-toggle { transform: rotate(90deg); }
   .version-item-body {
@@ -1309,7 +1315,9 @@
   </div>
   <div class="slider-footer">
     <button class="btn btn-danger" id="btnDeleteHistory" onclick="deleteHistoryEntry()">删除</button>
+    <button class="btn btn-secondary" id="btnEnterEdit" onclick="enterEditMode()" style="display:none">进行修改</button>
     <button class="btn btn-primary" id="btnSaveEdit" onclick="saveSliderEdit()" style="display:none">保存修改</button>
+    <button class="btn btn-secondary" id="btnCancelEdit" onclick="cancelEditMode()" style="display:none">取消修改</button>
     <button class="btn btn-secondary" onclick="closeSlider()">关闭</button>
   </div>
 </div>
@@ -2064,30 +2072,34 @@ function renderHistory() {
 }
 
 // ===== Slider Panel =====
+let _sliderOriginalTitle = '';
+let _sliderOriginalHtml = '';
+
 function openDetail(docId) {
   const entry = historyCache.find(h => h._docId === docId);
   if (!entry) return;
   currentModalDocId = docId;
   currentResearchId = null;
 
-  // Show editable title input, hide display title
+  // View mode: show display title, hide input
+  const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
+  const titlePart = entry.title ? entry.title + ' — ' : '';
   const titleDiv = document.getElementById('sliderTitle');
-  const titleInput = document.getElementById('sliderTitleInput');
-  titleDiv.style.display = 'none';
-  titleInput.style.display = '';
-  titleInput.value = entry.title || '';
-  const saveLabel = entry.saveType === 'manual' ? '(手动保存)' : '(自动保存)';
-  titleInput.placeholder = formatHistoryDate(entry.date || todayKey()) + '的写作 ' + saveLabel;
+  titleDiv.style.display = '';
+  titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
+  document.getElementById('sliderTitleInput').style.display = 'none';
 
-  // Editable body
+  // Read-only body
   const bodyEl = document.getElementById('sliderBody');
-  bodyEl.contentEditable = 'true';
+  bodyEl.contentEditable = 'false';
   if (entry.html) bodyEl.innerHTML = entry.html;
   else bodyEl.textContent = entry.text || '';
   buildTOC(bodyEl);
 
-  // Show save button
-  document.getElementById('btnSaveEdit').style.display = '';
+  // Footer: view mode buttons
+  document.getElementById('btnEnterEdit').style.display = '';
+  document.getElementById('btnSaveEdit').style.display = 'none';
+  document.getElementById('btnCancelEdit').style.display = 'none';
 
   // Delete button
   const deleteBtn = document.getElementById('btnDeleteHistory');
@@ -2101,6 +2113,59 @@ function openDetail(docId) {
   document.getElementById('sliderOverlay').classList.add('active');
   document.getElementById('sliderPanel').classList.add('open');
   document.body.style.overflow = 'hidden';
+}
+
+function enterEditMode() {
+  const entry = historyCache.find(h => h._docId === currentModalDocId);
+  if (!entry) return;
+
+  // Backup for cancel
+  _sliderOriginalTitle = entry.title || '';
+  _sliderOriginalHtml = entry.html || entry.text || '';
+
+  // Switch to editable title input
+  const titleDiv = document.getElementById('sliderTitle');
+  const titleInput = document.getElementById('sliderTitleInput');
+  titleDiv.style.display = 'none';
+  titleInput.style.display = '';
+  titleInput.value = entry.title || '';
+  const saveLabel = entry.saveType === 'manual' ? '(手动保存)' : '(自动保存)';
+  titleInput.placeholder = formatHistoryDate(entry.date || todayKey()) + '的写作 ' + saveLabel;
+  titleInput.focus();
+
+  // Make body editable
+  const bodyEl = document.getElementById('sliderBody');
+  bodyEl.contentEditable = 'true';
+  bodyEl.focus();
+
+  // Swap footer buttons
+  document.getElementById('btnEnterEdit').style.display = 'none';
+  document.getElementById('btnSaveEdit').style.display = '';
+  document.getElementById('btnCancelEdit').style.display = '';
+}
+
+function cancelEditMode() {
+  const entry = historyCache.find(h => h._docId === currentModalDocId);
+  if (!entry) return;
+
+  // Restore original content
+  const bodyEl = document.getElementById('sliderBody');
+  bodyEl.contentEditable = 'false';
+  if (entry.html) bodyEl.innerHTML = entry.html;
+  else bodyEl.textContent = entry.text || '';
+
+  // Restore display title
+  const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
+  const titlePart = entry.title ? entry.title + ' — ' : '';
+  const titleDiv = document.getElementById('sliderTitle');
+  titleDiv.style.display = '';
+  titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
+  document.getElementById('sliderTitleInput').style.display = 'none';
+
+  // Restore footer
+  document.getElementById('btnEnterEdit').style.display = '';
+  document.getElementById('btnSaveEdit').style.display = 'none';
+  document.getElementById('btnCancelEdit').style.display = 'none';
 }
 
 function buildTOC(contentEl) {
@@ -2167,6 +2232,18 @@ async function saveSliderEdit() {
     entry.wordCount = newWc;
     entry.versions = versions;
 
+    // Return to view mode
+    bodyEl.contentEditable = 'false';
+    const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
+    const titlePart = newTitle ? newTitle + ' — ' : '';
+    const titleDiv = document.getElementById('sliderTitle');
+    titleDiv.style.display = '';
+    titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
+    document.getElementById('sliderTitleInput').style.display = 'none';
+    document.getElementById('btnEnterEdit').style.display = '';
+    document.getElementById('btnSaveEdit').style.display = 'none';
+    document.getElementById('btnCancelEdit').style.display = 'none';
+
     renderVersionHistory(versions);
     renderHistory();
     showSaveToast('修改已保存', 'success');
@@ -2193,7 +2270,8 @@ function renderVersionHistory(versions) {
   const sorted = [...versions].reverse();
 
   const itemsHTML = sorted.map((v, idx) => {
-    const vNum = versions.length - idx; // version number (newest = highest)
+    const actualIdx = versions.length - 1 - idx; // index in original array (oldest-first)
+    const vNum = versions.length - idx; // display number (newest = highest)
     const dateStr = v.savedAt ? formatVersionDate(v.savedAt) : '—';
     const preview = (v.text || v.html || '').replace(/<[^>]*>/g, '').substring(0, 60).trim();
     const bodyContent = v.html
@@ -2205,6 +2283,7 @@ function renderVersionHistory(versions) {
           <span class="version-label">V${vNum}</span>
           <span class="version-date">${dateStr}</span>
           <span class="version-preview-text">${escapeHTML(preview)}</span>
+          <button class="version-delete-btn" id="vdel-${actualIdx}" onclick="event.stopPropagation();deleteVersion(${actualIdx},this)" title="删除此版本">&#10005;</button>
           <span class="version-item-toggle">&#9656;</span>
         </div>
         <div class="version-item-body">${bodyContent}</div>
@@ -2225,6 +2304,39 @@ function toggleVersionHistory() {
 
 function toggleVersionItem(idx) {
   document.getElementById('vitem-' + idx).classList.toggle('open');
+}
+
+async function deleteVersion(actualIdx, btn) {
+  if (!currentModalDocId) return;
+  const entry = historyCache.find(h => h._docId === currentModalDocId);
+  if (!entry || !Array.isArray(entry.versions)) return;
+
+  if (!btn.dataset.confirming) {
+    btn.dataset.confirming = 'true';
+    btn.textContent = '确认？';
+    btn.style.color = 'var(--red)';
+    btn.style.fontWeight = '600';
+    setTimeout(() => {
+      if (btn.dataset.confirming) {
+        delete btn.dataset.confirming;
+        btn.innerHTML = '&#10005;';
+        btn.style.color = '';
+        btn.style.fontWeight = '';
+      }
+    }, 3000);
+    return;
+  }
+
+  delete btn.dataset.confirming;
+  const versions = [...entry.versions];
+  versions.splice(actualIdx, 1);
+  try {
+    await fsUpdate('history', currentModalDocId, { versions });
+    entry.versions = versions;
+    renderVersionHistory(versions);
+  } catch(e) {
+    console.error('Delete version error:', e);
+  }
 }
 
 function formatVersionDate(isoStr) {
@@ -2253,7 +2365,9 @@ function closeSlider() {
   bodyEl.innerHTML = '';
   document.getElementById('sliderTitle').style.display = '';
   document.getElementById('sliderTitleInput').style.display = 'none';
+  document.getElementById('btnEnterEdit').style.display = 'none';
   document.getElementById('btnSaveEdit').style.display = 'none';
+  document.getElementById('btnCancelEdit').style.display = 'none';
   document.getElementById('versionHistory').style.display = 'none';
   document.getElementById('versionHistory').className = 'version-history';
 }
