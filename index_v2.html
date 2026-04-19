@@ -549,30 +549,48 @@
   }
   .idea-item:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
 
-  .idea-bullet { width: 8px; height: 8px; min-width: 8px; background: var(--orange); border-radius: 50%; margin-top: 7px; }
-  .idea-content { flex: 1; }
-  .idea-text { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; }
-  .idea-meta { font-size: 12px; color: var(--text-tertiary); }
-
-  .idea-delete {
-    background: none; border: none; color: var(--text-tertiary);
-    cursor: pointer; padding: 4px; border-radius: 4px;
-    font-size: 16px; line-height: 1; transition: all var(--transition); opacity: 0;
-  }
-  .idea-item:hover .idea-delete { opacity: 1; }
-  .idea-delete:hover { color: var(--red); background: var(--red-light); }
-
-  /* Done state */
-  .idea-item.done { opacity: 0.55; }
-  .idea-item.done .idea-text { text-decoration: line-through; }
+  /* Done checkbox — no dimming, just a visual tick */
   .idea-done-btn {
     background: none; border: 1.5px solid var(--border); border-radius: 50%;
     width: 18px; height: 18px; min-width: 18px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    margin-top: 5px; transition: all var(--transition); font-size: 10px; color: transparent;
+    margin-top: 4px; flex-shrink: 0;
+    transition: all var(--transition); font-size: 10px; color: transparent;
   }
   .idea-item.done .idea-done-btn { background: var(--accent); border-color: var(--accent); color: white; }
   .idea-done-btn:hover { border-color: var(--accent); }
+
+  .idea-content { flex: 1; min-width: 0; }
+  .idea-text { font-size: 15px; color: var(--text-primary); margin-bottom: 4px; line-height: 1.5; word-break: break-word; }
+
+  /* Right column: action buttons (top) + date (bottom) */
+  .idea-right {
+    display: flex; flex-direction: column; align-items: flex-end;
+    justify-content: space-between; gap: 8px; flex-shrink: 0; min-height: 40px;
+  }
+  .idea-action-btns { display: flex; gap: 2px; opacity: 0; transition: opacity var(--transition); }
+  .idea-item:hover .idea-action-btns { opacity: 1; }
+  .idea-edit-btn, .idea-delete {
+    background: none; border: none; color: var(--text-tertiary);
+    cursor: pointer; padding: 4px 5px; border-radius: 4px;
+    font-size: 14px; line-height: 1; transition: all var(--transition);
+  }
+  .idea-edit-btn:hover { color: var(--accent); background: var(--accent-light); }
+  .idea-delete:hover { color: var(--red); background: var(--red-light); }
+  .idea-meta { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
+
+  /* Inline edit form */
+  .idea-edit-form { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  .idea-edit-textarea {
+    width: 100%; padding: 8px 10px;
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    font-size: 15px; font-family: inherit; line-height: 1.5; color: var(--text-primary);
+    resize: vertical; outline: none; background: var(--bg);
+    transition: border-color var(--transition);
+  }
+  .idea-edit-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+  .idea-edit-actions { display: flex; gap: 6px; }
+  .btn-sm { padding: 5px 12px !important; font-size: 13px !important; }
 
   /* Category badges on cards */
   .idea-cats { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
@@ -2070,20 +2088,81 @@ function renderIdeas() {
           return def ? `<span class="idea-cat-badge ${def.cls}">${def.label}</span>` : '';
         }).join('')}</div>`
       : '';
-    return `<div class="idea-item${idea.done ? ' done' : ''}">
+    return `<div class="idea-item${idea.done ? ' done' : ''}" id="idea-card-${idea._docId}">
       <button class="idea-done-btn" onclick="toggleIdeaDone('${idea._docId}')" title="${idea.done ? '标记为未完成' : '标记为已完成'}">&#10003;</button>
       <div class="idea-content">
         <div class="idea-text">${escapeHTML(idea.text)}</div>
         ${catBadges}
+      </div>
+      <div class="idea-right">
+        <div class="idea-action-btns">
+          <button class="idea-edit-btn" onclick="startEditIdea('${idea._docId}')" title="编辑">&#9998;</button>
+          <button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button>
+        </div>
         <div class="idea-meta">${t}</div>
       </div>
-      <button class="idea-delete" onclick="deleteIdea('${idea._docId}')" title="删除">&#10005;</button>
     </div>`;
   }).join('');
 }
 
 function updateIdeasBadge() {
   document.getElementById('ideasBadge').textContent = ideasCache.length;
+}
+
+// ===== Inline Idea Edit =====
+function startEditIdea(docId) {
+  const idea = ideasCache.find(i => i._docId === docId);
+  if (!idea) return;
+  const card = document.getElementById('idea-card-' + docId);
+  if (!card) return;
+
+  const cats = idea.categories || [];
+  const catPickerHTML = IDEA_CATS.map(c =>
+    `<button class="idea-cat-btn ${c.cls}${cats.includes(c.id) ? ' active' : ''}" onclick="toggleEditIdeaCat('${docId}','${c.id}',this)">${c.label}</button>`
+  ).join('');
+
+  // Replace card content with edit form; keep the done-btn on the left
+  card.innerHTML = `
+    <button class="idea-done-btn${idea.done ? ' done-active' : ''}" style="pointer-events:none;${idea.done ? 'background:var(--accent);border-color:var(--accent);color:white;' : ''}">&#10003;</button>
+    <div class="idea-edit-form">
+      <textarea class="idea-edit-textarea" id="idea-edit-text-${docId}" rows="3"></textarea>
+      <div class="idea-cat-picker idea-edit-cats" id="idea-edit-cats-${docId}">${catPickerHTML}</div>
+      <div class="idea-edit-actions">
+        <button class="btn btn-primary btn-sm" onclick="saveEditIdea('${docId}')">保存</button>
+        <button class="btn btn-secondary btn-sm" onclick="renderIdeas()">取消</button>
+      </div>
+    </div>`;
+  // Set textarea value via JS to avoid HTML encoding issues
+  document.getElementById('idea-edit-text-' + docId).value = idea.text;
+  document.getElementById('idea-edit-text-' + docId).focus();
+}
+
+function toggleEditIdeaCat(docId, catId, btn) {
+  btn.classList.toggle('active');
+}
+
+async function saveEditIdea(docId) {
+  const idea = ideasCache.find(i => i._docId === docId);
+  if (!idea) return;
+
+  const textarea = document.getElementById('idea-edit-text-' + docId);
+  const newText = textarea ? textarea.value.trim() : '';
+  if (!newText) return;
+
+  // Collect selected categories from the picker
+  const catContainer = document.getElementById('idea-edit-cats-' + docId);
+  const newCats = catContainer
+    ? IDEA_CATS.filter(c => catContainer.querySelector('.idea-cat-btn.' + c.cls + '.active')).map(c => c.id)
+    : idea.categories || [];
+
+  // Update Firestore — createdAt is untouched, only text/categories/updatedAt change
+  await fsUpdate('ideas', docId, { text: newText, categories: newCats });
+
+  // Update cache
+  idea.text = newText;
+  idea.categories = newCats;
+
+  renderIdeas();
 }
 
 // ===== Research (tab view) =====
