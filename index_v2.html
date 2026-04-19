@@ -2314,53 +2314,64 @@ function openDetail(docId) {
 }
 
 function enterEditMode() {
-  const entry = historyCache.find(h => h._docId === currentModalDocId);
-  if (!entry) return;
-
-  // Backup for cancel
-  _sliderOriginalTitle = entry.title || '';
-  _sliderOriginalHtml = entry.html || entry.text || '';
-
-  // Switch to editable title input
   const titleDiv = document.getElementById('sliderTitle');
   const titleInput = document.getElementById('sliderTitleInput');
-  titleDiv.style.display = 'none';
-  titleInput.style.display = '';
-  titleInput.value = entry.title || '';
-  const saveLabel = entry.saveType === 'manual' ? '(手动保存)' : '(自动保存)';
-  titleInput.placeholder = formatHistoryDate(entry.date || todayKey()) + '的写作 ' + saveLabel;
-  titleInput.focus();
-
-  // Make body editable
   const bodyEl = document.getElementById('sliderBody');
-  bodyEl.contentEditable = 'true';
-  bodyEl.focus();
 
-  // Swap footer buttons
+  if (currentResearchId) {
+    // Research entry
+    const item = researchCache.find(i => i._docId === currentResearchId);
+    if (!item) return;
+    _sliderOriginalTitle = item.title || '';
+    _sliderOriginalHtml = item.bodyHTML || item.body || '';
+    titleDiv.style.display = 'none';
+    titleInput.style.display = '';
+    titleInput.value = item.title || '';
+    titleInput.placeholder = '调研主题';
+  } else {
+    // History entry
+    const entry = historyCache.find(h => h._docId === currentModalDocId);
+    if (!entry) return;
+    _sliderOriginalTitle = entry.title || '';
+    _sliderOriginalHtml = entry.html || entry.text || '';
+    titleDiv.style.display = 'none';
+    titleInput.style.display = '';
+    titleInput.value = entry.title || '';
+    const saveLabel = entry.saveType === 'manual' ? '(手动保存)' : '(自动保存)';
+    titleInput.placeholder = formatHistoryDate(entry.date || todayKey()) + '的写作 ' + saveLabel;
+  }
+
+  titleInput.focus();
+  bodyEl.contentEditable = 'true';
   document.getElementById('btnEnterEdit').style.display = 'none';
   document.getElementById('btnSaveEdit').style.display = '';
   document.getElementById('btnCancelEdit').style.display = '';
 }
 
 function cancelEditMode() {
-  const entry = historyCache.find(h => h._docId === currentModalDocId);
-  if (!entry) return;
-
-  // Restore original content
   const bodyEl = document.getElementById('sliderBody');
-  bodyEl.contentEditable = 'false';
-  if (entry.html) bodyEl.innerHTML = entry.html;
-  else bodyEl.textContent = entry.text || '';
-
-  // Restore display title
-  const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
-  const titlePart = entry.title ? entry.title + ' — ' : '';
   const titleDiv = document.getElementById('sliderTitle');
-  titleDiv.style.display = '';
-  titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
-  document.getElementById('sliderTitleInput').style.display = 'none';
+  bodyEl.contentEditable = 'false';
 
-  // Restore footer
+  if (currentResearchId) {
+    const item = researchCache.find(i => i._docId === currentResearchId);
+    if (!item) return;
+    if (item.bodyHTML) bodyEl.innerHTML = item.bodyHTML;
+    else bodyEl.textContent = item.body || '';
+    titleDiv.style.display = '';
+    titleDiv.textContent = item.title || '未命名调研';
+  } else {
+    const entry = historyCache.find(h => h._docId === currentModalDocId);
+    if (!entry) return;
+    if (entry.html) bodyEl.innerHTML = entry.html;
+    else bodyEl.textContent = entry.text || '';
+    const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
+    const titlePart = entry.title ? entry.title + ' — ' : '';
+    titleDiv.style.display = '';
+    titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
+  }
+
+  document.getElementById('sliderTitleInput').style.display = 'none';
   document.getElementById('btnEnterEdit').style.display = '';
   document.getElementById('btnSaveEdit').style.display = 'none';
   document.getElementById('btnCancelEdit').style.display = 'none';
@@ -2388,62 +2399,100 @@ function buildTOC(contentEl) {
 
 // ===== Save Slider Edit =====
 async function saveSliderEdit() {
-  if (!currentModalDocId) return;
-  const entry = historyCache.find(h => h._docId === currentModalDocId);
-  if (!entry) return;
-
   const btn = document.getElementById('btnSaveEdit');
   btn.disabled = true;
   btn.textContent = '保存中…';
 
-  // Archive current version before overwriting
-  const archivedVersion = {
-    savedAt: (entry.updatedAt && entry.updatedAt.toDate ? entry.updatedAt.toDate().toISOString() : new Date().toISOString()),
-    title: entry.title || '',
-    html: entry.html || '',
-    text: entry.text || ''
-  };
-
-  // Get new values from the editable UI
   const newTitle = document.getElementById('sliderTitleInput').value.trim();
   const bodyEl = document.getElementById('sliderBody');
   const newHtml = bodyEl.innerHTML;
   const newText = bodyEl.innerText || bodyEl.textContent || '';
-  const newWc = countWords(newText);
-
-  const versions = Array.isArray(entry.versions) ? [...entry.versions] : [];
-  versions.push(archivedVersion);
 
   try {
-    await fsUpdate('history', currentModalDocId, {
-      title: newTitle,
-      html: newHtml,
-      text: newText,
-      wordCount: newWc,
-      versions: versions
-    });
+    if (currentResearchId) {
+      // ---- Research entry ----
+      const item = researchCache.find(i => i._docId === currentResearchId);
+      if (!item) throw new Error('item not found');
 
-    // Update local cache
-    entry.title = newTitle;
-    entry.html = newHtml;
-    entry.text = newText;
-    entry.wordCount = newWc;
-    entry.versions = versions;
+      const archivedVersion = {
+        savedAt: (item.updatedAt && item.updatedAt.toDate ? item.updatedAt.toDate().toISOString() : new Date().toISOString()),
+        title: item.title || '',
+        bodyHTML: item.bodyHTML || '',
+        body: item.body || ''
+      };
+      const versions = Array.isArray(item.versions) ? [...item.versions] : [];
+      versions.push(archivedVersion);
 
-    // Return to view mode
-    bodyEl.contentEditable = 'false';
-    const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
-    const titlePart = newTitle ? newTitle + ' — ' : '';
-    const titleDiv = document.getElementById('sliderTitle');
-    titleDiv.style.display = '';
-    titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
-    document.getElementById('sliderTitleInput').style.display = 'none';
-    document.getElementById('btnEnterEdit').style.display = '';
-    document.getElementById('btnSaveEdit').style.display = 'none';
-    document.getElementById('btnCancelEdit').style.display = 'none';
+      await fsUpdate('research', currentResearchId, {
+        title: newTitle || '未命名调研',
+        bodyHTML: newHtml,
+        body: newText,
+        versions
+      });
 
-    renderVersionHistory(versions);
-    renderHistory();
+      item.title = newTitle || '未命名调研';
+      item.bodyHTML = newHtml;
+      item.body = newText;
+      item.versions = versions;
+
+      // Return to view mode
+      bodyEl.contentEditable = 'false';
+      const titleDiv = document.getElementById('sliderTitle');
+      titleDiv.style.display = '';
+      titleDiv.textContent = item.title;
+      document.getElementById('sliderTitleInput').style.display = 'none';
+      document.getElementById('btnEnterEdit').style.display = '';
+      document.getElementById('btnSaveEdit').style.display = 'none';
+      document.getElementById('btnCancelEdit').style.display = 'none';
+
+      renderVersionHistory(versions);
+      renderResearch();
+
+    } else if (currentModalDocId) {
+      // ---- History entry ----
+      const entry = historyCache.find(h => h._docId === currentModalDocId);
+      if (!entry) throw new Error('entry not found');
+
+      const archivedVersion = {
+        savedAt: (entry.updatedAt && entry.updatedAt.toDate ? entry.updatedAt.toDate().toISOString() : new Date().toISOString()),
+        title: entry.title || '',
+        html: entry.html || '',
+        text: entry.text || ''
+      };
+      const newWc = countWords(newText);
+      const versions = Array.isArray(entry.versions) ? [...entry.versions] : [];
+      versions.push(archivedVersion);
+
+      await fsUpdate('history', currentModalDocId, {
+        title: newTitle,
+        html: newHtml,
+        text: newText,
+        wordCount: newWc,
+        versions
+      });
+
+      entry.title = newTitle;
+      entry.html = newHtml;
+      entry.text = newText;
+      entry.wordCount = newWc;
+      entry.versions = versions;
+
+      // Return to view mode
+      bodyEl.contentEditable = 'false';
+      const saveLabel = entry.saveType === 'manual' ? ' (手动保存)' : ' (自动保存)';
+      const titlePart = newTitle ? newTitle + ' — ' : '';
+      const titleDiv = document.getElementById('sliderTitle');
+      titleDiv.style.display = '';
+      titleDiv.textContent = titlePart + formatHistoryDate(entry.date || todayKey()) + '的写作' + saveLabel;
+      document.getElementById('sliderTitleInput').style.display = 'none';
+      document.getElementById('btnEnterEdit').style.display = '';
+      document.getElementById('btnSaveEdit').style.display = 'none';
+      document.getElementById('btnCancelEdit').style.display = 'none';
+
+      renderVersionHistory(versions);
+      renderHistory();
+    }
+
     showSaveToast('修改已保存', 'success');
   } catch(e) {
     console.error('Save edit error:', e);
@@ -2505,9 +2554,16 @@ function toggleVersionItem(idx) {
 }
 
 async function deleteVersion(actualIdx, btn) {
-  if (!currentModalDocId) return;
-  const entry = historyCache.find(h => h._docId === currentModalDocId);
-  if (!entry || !Array.isArray(entry.versions)) return;
+  // Find the right record (history or research)
+  let record = null, colName = '', docId = '';
+  if (currentResearchId) {
+    record = researchCache.find(i => i._docId === currentResearchId);
+    colName = 'research'; docId = currentResearchId;
+  } else if (currentModalDocId) {
+    record = historyCache.find(h => h._docId === currentModalDocId);
+    colName = 'history'; docId = currentModalDocId;
+  }
+  if (!record || !Array.isArray(record.versions)) return;
 
   if (!btn.dataset.confirming) {
     btn.dataset.confirming = 'true';
@@ -2526,11 +2582,11 @@ async function deleteVersion(actualIdx, btn) {
   }
 
   delete btn.dataset.confirming;
-  const versions = [...entry.versions];
+  const versions = [...record.versions];
   versions.splice(actualIdx, 1);
   try {
-    await fsUpdate('history', currentModalDocId, { versions });
-    entry.versions = versions;
+    await fsUpdate(colName, docId, { versions });
+    record.versions = versions;
     renderVersionHistory(versions);
   } catch(e) {
     console.error('Delete version error:', e);
@@ -2638,23 +2694,33 @@ function openResearchDetail(docId) {
   currentResearchId = docId;
   currentModalDocId = null;
 
-  // Read-only: show display title, hide editable input
+  // View mode: display title
   const titleDiv = document.getElementById('sliderTitle');
   titleDiv.style.display = '';
   titleDiv.textContent = item.title || '未命名调研';
   document.getElementById('sliderTitleInput').style.display = 'none';
-  document.getElementById('btnSaveEdit').style.display = 'none';
-  document.getElementById('versionHistory').style.display = 'none';
 
+  // Read-only body
   const bodyEl = document.getElementById('sliderBody');
   bodyEl.contentEditable = 'false';
   if (item.bodyHTML) bodyEl.innerHTML = item.bodyHTML;
-  else bodyEl.textContent = item.body;
+  else bodyEl.textContent = item.body || '';
   buildTOC(bodyEl);
+
+  // Footer: view mode
+  document.getElementById('btnEnterEdit').style.display = '';
+  document.getElementById('btnSaveEdit').style.display = 'none';
+  document.getElementById('btnCancelEdit').style.display = 'none';
+
+  // Delete button
   const deleteBtn = document.getElementById('btnDeleteHistory');
   deleteBtn.onclick = function() { deleteResearchFromSlider(); };
   deleteBtn.textContent = '删除';
   delete deleteBtn.dataset.confirming;
+
+  // Version history
+  renderVersionHistory(item.versions || []);
+
   document.getElementById('sliderOverlay').classList.add('active');
   document.getElementById('sliderPanel').classList.add('open');
   document.body.style.overflow = 'hidden';
