@@ -818,19 +818,46 @@
   .export-modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
   .export-modal p { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
 
-  .export-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .export-options { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; max-height: 50vh; overflow-y: auto; }
 
-  .export-option {
+  .export-category {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    overflow: hidden; transition: all var(--transition);
+  }
+
+  .export-category-header {
     display: flex; align-items: center; gap: 10px;
     padding: 12px 16px;
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
     cursor: pointer; transition: all var(--transition);
+    background: var(--surface);
   }
-  .export-option:hover { border-color: var(--accent); background: var(--accent-light); }
-  .export-option.selected { border-color: var(--accent); background: var(--accent-light); }
-  .export-option input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
-  .export-option-label { font-size: 14px; font-weight: 500; }
-  .export-option-count { font-size: 12px; color: var(--text-tertiary); margin-left: auto; }
+  .export-category-header:hover { background: var(--surface-hover); }
+  .export-category input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+  .export-category-label { font-size: 14px; font-weight: 600; }
+  .export-category-count { font-size: 12px; color: var(--text-tertiary); margin-left: auto; }
+  .export-category-arrow { font-size: 12px; color: var(--text-tertiary); transition: transform 0.2s ease; margin-left: 6px; }
+  .export-category.expanded .export-category-arrow { transform: rotate(90deg); }
+
+  .export-items {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease;
+    background: var(--bg);
+    border-top: 1px solid var(--border-light);
+  }
+  .export-category.expanded .export-items { max-height: 600px; overflow-y: auto; }
+
+  .export-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px 8px 42px;
+    cursor: pointer; transition: all var(--transition);
+    font-size: 13px;
+  }
+  .export-item:hover { background: var(--accent-light); }
+  .export-item input[type="checkbox"] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .export-item-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-primary); }
+  .export-item-date { font-size: 12px; color: var(--text-tertiary); white-space: nowrap; }
+
+  .export-selected-count { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
 
   .export-actions { display: flex; gap: 8px; justify-content: flex-end; }
 
@@ -1084,23 +1111,8 @@
   <div class="export-modal">
     <h2>&#128229; 导出为 Markdown</h2>
     <p>选择要导出的内容，可直接放入 Obsidian vault 使用</p>
-    <div class="export-options">
-      <label class="export-option" id="exportOptHistory">
-        <input type="checkbox" id="exportHistory" checked>
-        <span class="export-option-label">写作记录</span>
-        <span class="export-option-count" id="exportHistoryCount">0 篇</span>
-      </label>
-      <label class="export-option" id="exportOptIdeas">
-        <input type="checkbox" id="exportIdeas" checked>
-        <span class="export-option-label">随机想法</span>
-        <span class="export-option-count" id="exportIdeasCount">0 条</span>
-      </label>
-      <label class="export-option" id="exportOptResearch">
-        <input type="checkbox" id="exportResearch" checked>
-        <span class="export-option-label">调研笔记</span>
-        <span class="export-option-count" id="exportResearchCount">0 篇</span>
-      </label>
-    </div>
+    <div class="export-selected-count" id="exportSelectedCount">已选择 0 项</div>
+    <div class="export-options" id="exportOptions"></div>
     <div class="export-actions">
       <button class="btn btn-secondary" onclick="closeExportModal()">取消</button>
       <button class="btn btn-primary" onclick="doExport()">&#128229; 导出并下载</button>
@@ -1933,15 +1945,154 @@ function showSaveToast(message, type) {
 }
 
 // ===== Export to Markdown =====
+let exportSelections = { history: new Set(), ideas: new Set(), research: new Set() };
+
+function getItemDate(item) {
+  const d = item.date ? item.date :
+    (item.updatedAt instanceof Date ? item.updatedAt :
+    (item.updatedAt?.toDate ? item.updatedAt.toDate() :
+    (item.createdAt instanceof Date ? item.createdAt :
+    (item.createdAt?.toDate ? item.createdAt.toDate() : new Date()))));
+  if (typeof d === 'string') return d;
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getItemDisplayDate(item) {
+  const d = getItemDate(item);
+  if (typeof d === 'string') {
+    const [y, m, day] = d.split('-');
+    return `${parseInt(m)}月${parseInt(day)}日`;
+  }
+  return '';
+}
+
 function openExportModal() {
-  document.getElementById('exportHistoryCount').textContent = historyCache.length + ' 篇';
-  document.getElementById('exportIdeasCount').textContent = ideasCache.length + ' 条';
-  document.getElementById('exportResearchCount').textContent = researchCache.length + ' 篇';
+  // Reset selections — select all by default
+  exportSelections.history = new Set(historyCache.map(h => h._docId));
+  exportSelections.ideas = new Set(ideasCache.map(i => i._docId));
+  exportSelections.research = new Set(researchCache.map(r => r._docId));
+
+  renderExportOptions();
   document.getElementById('exportOverlay').classList.add('active');
+}
+
+function renderExportOptions() {
+  const container = document.getElementById('exportOptions');
+  let html = '';
+
+  // --- History ---
+  const hChecked = exportSelections.history.size === historyCache.length && historyCache.length > 0;
+  const hPartial = exportSelections.history.size > 0 && exportSelections.history.size < historyCache.length;
+  html += `<div class="export-category" id="exportCatHistory">
+    <div class="export-category-header" onclick="toggleExportCategory('history')">
+      <input type="checkbox" ${hChecked ? 'checked' : ''} ${hPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('history', this.checked)">
+      <span class="export-category-label">写作记录</span>
+      <span class="export-category-count">${exportSelections.history.size}/${historyCache.length} 篇</span>
+      <span class="export-category-arrow">&#9654;</span>
+    </div>
+    <div class="export-items">`;
+  historyCache.forEach(entry => {
+    const title = entry.title || '无标题';
+    const date = getItemDisplayDate(entry);
+    const checked = exportSelections.history.has(entry._docId) ? 'checked' : '';
+    html += `<label class="export-item">
+      <input type="checkbox" ${checked} onchange="toggleExportItem('history','${entry._docId}',this.checked)">
+      <span class="export-item-title">${escapeHTML(title)}</span>
+      <span class="export-item-date">${date}</span>
+    </label>`;
+  });
+  html += `</div></div>`;
+
+  // --- Ideas ---
+  const iChecked = exportSelections.ideas.size === ideasCache.length && ideasCache.length > 0;
+  const iPartial = exportSelections.ideas.size > 0 && exportSelections.ideas.size < ideasCache.length;
+  html += `<div class="export-category" id="exportCatIdeas">
+    <div class="export-category-header" onclick="toggleExportCategory('ideas')">
+      <input type="checkbox" ${iChecked ? 'checked' : ''} ${iPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('ideas', this.checked)">
+      <span class="export-category-label">随机想法</span>
+      <span class="export-category-count">${exportSelections.ideas.size}/${ideasCache.length} 条</span>
+      <span class="export-category-arrow">&#9654;</span>
+    </div>
+    <div class="export-items">`;
+  ideasCache.forEach(idea => {
+    const preview = idea.text.length > 40 ? idea.text.substring(0, 40) + '...' : idea.text;
+    const date = getItemDisplayDate(idea);
+    const checked = exportSelections.ideas.has(idea._docId) ? 'checked' : '';
+    html += `<label class="export-item">
+      <input type="checkbox" ${checked} onchange="toggleExportItem('ideas','${idea._docId}',this.checked)">
+      <span class="export-item-title">${escapeHTML(preview)}</span>
+      <span class="export-item-date">${date}</span>
+    </label>`;
+  });
+  html += `</div></div>`;
+
+  // --- Research ---
+  const rChecked = exportSelections.research.size === researchCache.length && researchCache.length > 0;
+  const rPartial = exportSelections.research.size > 0 && exportSelections.research.size < researchCache.length;
+  html += `<div class="export-category" id="exportCatResearch">
+    <div class="export-category-header" onclick="toggleExportCategory('research')">
+      <input type="checkbox" ${rChecked ? 'checked' : ''} ${rPartial ? 'style="opacity:0.5"' : ''} onclick="event.stopPropagation();toggleCategoryAll('research', this.checked)">
+      <span class="export-category-label">调研笔记</span>
+      <span class="export-category-count">${exportSelections.research.size}/${researchCache.length} 篇</span>
+      <span class="export-category-arrow">&#9654;</span>
+    </div>
+    <div class="export-items">`;
+  researchCache.forEach(item => {
+    const title = item.title || '未命名调研';
+    const date = getItemDisplayDate(item);
+    const checked = exportSelections.research.has(item._docId) ? 'checked' : '';
+    html += `<label class="export-item">
+      <input type="checkbox" ${checked} onchange="toggleExportItem('research','${item._docId}',this.checked)">
+      <span class="export-item-title">${escapeHTML(title)}</span>
+      <span class="export-item-date">${date}</span>
+    </label>`;
+  });
+  html += `</div></div>`;
+
+  container.innerHTML = html;
+  updateExportCount();
+}
+
+function toggleExportCategory(cat) {
+  const el = document.getElementById('exportCat' + cat.charAt(0).toUpperCase() + cat.slice(1));
+  if (el) el.classList.toggle('expanded');
+}
+
+function toggleCategoryAll(cat, checked) {
+  const cache = cat === 'history' ? historyCache : cat === 'ideas' ? ideasCache : researchCache;
+  if (checked) {
+    cache.forEach(item => exportSelections[cat].add(item._docId));
+  } else {
+    exportSelections[cat].clear();
+  }
+  renderExportOptions();
+  // Re-expand the category after re-render
+  const el = document.getElementById('exportCat' + cat.charAt(0).toUpperCase() + cat.slice(1));
+  if (el) el.classList.add('expanded');
+}
+
+function toggleExportItem(cat, docId, checked) {
+  if (checked) exportSelections[cat].add(docId);
+  else exportSelections[cat].delete(docId);
+  updateExportCount();
+  // Update category header checkbox state
+  renderExportOptions();
+  // Keep category expanded
+  const el = document.getElementById('exportCat' + cat.charAt(0).toUpperCase() + cat.slice(1));
+  if (el) el.classList.add('expanded');
+}
+
+function updateExportCount() {
+  const total = exportSelections.history.size + exportSelections.ideas.size + exportSelections.research.size;
+  document.getElementById('exportSelectedCount').textContent = `已选择 ${total} 项`;
 }
 
 function closeExportModal() {
   document.getElementById('exportOverlay').classList.remove('active');
+}
+
+function sanitizeFilename(str) {
+  return str.replace(/[\/\\:*?"<>|]/g, '_').replace(/\s+/g, '_').substring(0, 60);
 }
 
 function htmlToMarkdown(html) {
@@ -1983,47 +2134,45 @@ function htmlToMarkdown(html) {
 }
 
 function doExport() {
-  const exportHistory = document.getElementById('exportHistory').checked;
-  const exportIdeas = document.getElementById('exportIdeas').checked;
-  const exportResearch = document.getElementById('exportResearch').checked;
-
   const files = [];
 
-  if (exportHistory && historyCache.length > 0) {
-    historyCache.forEach(entry => {
-      const date = entry.date || todayKey();
-      const title = entry.title || '无标题';
-      const saveType = entry.saveType === 'manual' ? '手动保存' : '自动保存';
-      const wc = entry.wordCount || 0;
-      const mins = Math.floor((entry.timerSeconds || 0) / 60);
-      let content = `---\ntitle: "${title}"\ndate: ${date}\ntype: writing\nword_count: ${wc}\nwriting_minutes: ${mins}\nsave_type: ${saveType}\n---\n\n`;
-      if (entry.title) content += `# ${entry.title}\n\n`;
-      content += entry.html ? htmlToMarkdown(entry.html) : (entry.text || '');
-      const filename = `writing-${date}-${entry.saveType === 'manual' ? 'manual' : 'auto'}-${entry._docId.slice(-6)}.md`;
-      files.push({ filename, content });
-    });
-  }
+  // Export selected history items
+  historyCache.forEach(entry => {
+    if (!exportSelections.history.has(entry._docId)) return;
+    const date = entry.date || todayKey();
+    const title = entry.title || '无标题';
+    const saveType = entry.saveType === 'manual' ? '手动保存' : '自动保存';
+    const wc = entry.wordCount || 0;
+    const mins = Math.floor((entry.timerSeconds || 0) / 60);
+    let content = `---\ntitle: "${title}"\ndate: ${date}\ntype: writing\nword_count: ${wc}\nwriting_minutes: ${mins}\nsave_type: ${saveType}\n---\n\n`;
+    if (entry.title) content += `# ${entry.title}\n\n`;
+    content += entry.html ? htmlToMarkdown(entry.html) : (entry.text || '');
+    const filename = `${sanitizeFilename(title)}_${date}.md`;
+    files.push({ filename, content });
+  });
 
-  if (exportIdeas && ideasCache.length > 0) {
-    let content = `---\ntitle: "随机想法集"\ndate: ${todayKey()}\ntype: ideas\n---\n\n# 随机想法\n\n`;
-    ideasCache.forEach(idea => {
+  // Export selected ideas
+  const selectedIdeas = ideasCache.filter(i => exportSelections.ideas.has(i._docId));
+  if (selectedIdeas.length > 0) {
+    let content = `---\ntitle: "随机想法"\ndate: ${todayKey()}\ntype: ideas\n---\n\n# 随机想法\n\n`;
+    selectedIdeas.forEach(idea => {
       const d = idea.createdAt instanceof Date ? idea.createdAt : (idea.createdAt?.toDate ? idea.createdAt.toDate() : new Date());
       const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
       content += `- **${t}**: ${idea.text}\n`;
     });
-    files.push({ filename: `ideas-${todayKey()}.md`, content });
+    files.push({ filename: `随机想法_${todayKey()}.md`, content });
   }
 
-  if (exportResearch && researchCache.length > 0) {
-    researchCache.forEach(item => {
-      const d = item.updatedAt instanceof Date ? item.updatedAt : (item.updatedAt?.toDate ? item.updatedAt.toDate() : new Date());
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-      let content = `---\ntitle: "${item.title || '未命名调研'}"\ndate: ${dateStr}\ntype: research\n---\n\n# ${item.title || '未命名调研'}\n\n`;
-      content += item.bodyHTML ? htmlToMarkdown(item.bodyHTML) : (item.body || '');
-      const filename = `research-${dateStr}-${item._docId.slice(-6)}.md`;
-      files.push({ filename, content });
-    });
-  }
+  // Export selected research items
+  researchCache.forEach(item => {
+    if (!exportSelections.research.has(item._docId)) return;
+    const dateStr = getItemDate(item);
+    const title = item.title || '未命名调研';
+    let content = `---\ntitle: "${title}"\ndate: ${dateStr}\ntype: research\n---\n\n# ${title}\n\n`;
+    content += item.bodyHTML ? htmlToMarkdown(item.bodyHTML) : (item.body || '');
+    const filename = `${sanitizeFilename(title)}_${dateStr}.md`;
+    files.push({ filename, content });
+  });
 
   if (files.length === 0) {
     showSaveToast('没有可导出的内容', 'auto');
@@ -2031,21 +2180,8 @@ function doExport() {
     return;
   }
 
-  // Download as individual files if few, or as a combined file
-  if (files.length === 1) {
-    downloadFile(files[0].filename, files[0].content);
-  } else {
-    // Create a combined zip-like download: one file per click is annoying,
-    // so let's create a single combined markdown
-    let combined = `# 心流写作导出\n\n导出时间: ${new Date().toLocaleString('zh-CN')}\n\n---\n\n`;
-    files.forEach(f => {
-      combined += `\n\n---\n\n## 📄 ${f.filename}\n\n${f.content}\n`;
-    });
-    downloadFile(`心流写作-导出-${todayKey()}.md`, combined);
-
-    // Also offer individual files
-    files.forEach(f => downloadFile(f.filename, f.content));
-  }
+  // Download each file individually
+  files.forEach(f => downloadFile(f.filename, f.content));
 
   showSaveToast(`已导出 ${files.length} 个文件！`, 'manual');
   closeExportModal();
@@ -2109,5 +2245,3 @@ async function initApp() {
 </script>
 </body>
 </html>
-
-<!-- v2 -->
