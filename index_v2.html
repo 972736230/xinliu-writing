@@ -901,16 +901,24 @@
   ::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
 
   /* ===== History Toolbar ===== */
-  .history-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .history-date-filter { display: flex; align-items: center; gap: 6px; }
-  .date-input { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 5px 8px; font-size: 13px; color: var(--text-primary); background: var(--surface); cursor: pointer; }
+  .history-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; margin-bottom: 10px;
+  }
+  .history-filter { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .history-date-filter { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .date-input {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 5px 8px; font-size: 13px; color: var(--text-primary);
+    background: var(--surface); cursor: pointer; height: 32px;
+  }
   .date-input:focus { outline: none; border-color: var(--accent); }
   .date-sep { font-size: 13px; color: var(--text-tertiary); }
   .date-clear-btn { background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-tertiary); padding: 4px 6px; border-radius: 4px; }
   .date-clear-btn:hover { background: var(--surface-hover); color: var(--text-primary); }
   /* Hashtag Cloud */
-  .hashtag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; min-height: 0; }
-  .hashtag-cloud:empty { display: none; }
+  .hashtag-cloud { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .hashtag-cloud:empty { display: none; margin-bottom: 0; }
   .tag-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 99px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); transition: all var(--transition); }
   .tag-chip:hover { border-color: var(--accent); color: var(--accent); }
   .tag-chip.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); font-weight: 600; }
@@ -1859,28 +1867,34 @@ function extractHashtags(text) {
   return [...new Set(matches)];
 }
 
-function renderHashtagCloud() {
+// Compute hashtag counts from a given set of items (not all history)
+function renderHashtagCloud(baseItems) {
   const cloud = document.getElementById('hashtagCloud');
   if (!cloud) return;
-  // Count all hashtags across all history entries
   const counts = {};
-  historyCache.forEach(entry => {
+  (baseItems || []).forEach(entry => {
     extractHashtags((entry.text || '') + ' ' + (entry.title || '')).forEach(tag => {
       counts[tag] = (counts[tag] || 0) + 1;
     });
   });
   const tags = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  if (tags.length === 0) { cloud.innerHTML = ''; return; }
+  if (tags.length === 0) {
+    // If active tag no longer exists in filtered set, clear it
+    if (historyTagFilter) historyTagFilter = '';
+    cloud.innerHTML = '';
+    return;
+  }
+  // If active tag not present in this set, clear it
+  if (historyTagFilter && !counts[historyTagFilter]) historyTagFilter = '';
   cloud.innerHTML = tags.map(([tag, count]) =>
-    `<span class="tag-chip${historyTagFilter === tag ? ' active' : ''}" onclick="filterByTag('${tag}')">
-      ${escapeHTML(tag)} <span class="tag-count">${count}</span>
+    `<span class="tag-chip${historyTagFilter === tag ? ' active' : ''}" onclick="filterByTag('${escapeHTML(tag)}')">
+      ${escapeHTML(tag)} <span class="tag-count">(${count})</span>
     </span>`
   ).join('');
 }
 
 function filterByTag(tag) {
   historyTagFilter = historyTagFilter === tag ? '' : tag;
-  renderHashtagCloud();
   renderHistory();
 }
 
@@ -1909,17 +1923,22 @@ function clearDateFilter() {
 }
 
 function renderHistory() {
-  let items = [...historyCache];
   const container = document.getElementById('historyList');
-  // Save type filter
-  if (historyFilter !== 'all') items = items.filter(h => h.saveType === historyFilter);
-  // Date range filter
-  if (historyDateFrom) items = items.filter(h => (h.date || '') >= historyDateFrom);
-  if (historyDateTo)   items = items.filter(h => (h.date || '') <= historyDateTo);
-  // Hashtag filter
-  if (historyTagFilter) items = items.filter(h =>
-    extractHashtags((h.text || '') + ' ' + (h.title || '')).includes(historyTagFilter)
-  );
+
+  // Step 1: base filter (type + date) — used for hashtag cloud
+  let baseItems = [...historyCache];
+  if (historyFilter !== 'all') baseItems = baseItems.filter(h => h.saveType === historyFilter);
+  if (historyDateFrom) baseItems = baseItems.filter(h => (h.date || '') >= historyDateFrom);
+  if (historyDateTo)   baseItems = baseItems.filter(h => (h.date || '') <= historyDateTo);
+
+  // Step 2: render hashtag cloud based on base items (before tag filter)
+  renderHashtagCloud(baseItems);
+
+  // Step 3: apply hashtag filter on top
+  let items = historyTagFilter
+    ? baseItems.filter(h => extractHashtags((h.text || '') + ' ' + (h.title || '')).includes(historyTagFilter))
+    : baseItems;
+
   if (items.length === 0) {
     container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#128218;</div><div class="empty-state-text">没有符合条件的记录</div><div class="empty-state-sub">试试调整筛选条件</div></div>`;
     return;
@@ -2425,7 +2444,6 @@ async function initApp() {
   updateResearchBadge();
   updateHistoryBadge();
   renderIdeas();
-  renderHashtagCloud();
   renderStatsSidebar();
 }
 
