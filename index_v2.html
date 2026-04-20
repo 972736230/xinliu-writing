@@ -3465,7 +3465,12 @@ async function initObsidianSync() {
   try {
     const perm = await handle.queryPermission({ mode: 'readwrite' });
     _obDirHandle = handle;
-    _obUpdateStatus(perm === 'granted' ? true : 'pending');
+    if (perm === 'granted') {
+      _obUpdateStatus(true);
+      obFullSync(); // catch up anything written on other devices
+    } else {
+      _obUpdateStatus('pending');
+    }
   } catch { _obUpdateStatus(false); }
 }
 
