@@ -1204,6 +1204,7 @@
     <div style="display:flex;align-items:center;gap:12px;">
       <div class="header-date" id="headerDate"></div>
       <button class="btn-export" onclick="openExportModal()">&#128229; 导出 Markdown</button>
+      <button id="btnObsidian" onclick="connectObsidian()" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:6px 12px;font-size:13px;color:var(--text-secondary);cursor:pointer;white-space:nowrap;" title="连接 Obsidian Vault，自动同步内容">○ 连接 Obsidian</button>
       <div class="user-bar" id="userBar">
         <img class="user-avatar" id="userAvatar" src="" alt="">
         <span class="user-name" id="userName"></span>
@@ -1827,13 +1828,16 @@ async function saveToHistory(text, html, title, saveType) {
       await fsUpdate('history', existing._docId, { title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
       existing.title = title; existing.text = text; existing.html = html;
       existing.wordCount = wc; existing.timerSeconds = timerSeconds;
+      obSyncHistory(existing);
     } else {
       const docId = await fsAdd('history', { date, title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
       historyCache.unshift({ _docId: docId, date, title, text, html, wordCount: wc, timerSeconds, saveType: 'auto' });
+      obSyncHistory(historyCache[0]);
     }
   } else {
     const docId = await fsAdd('history', { date, title, text, html, wordCount: wc, timerSeconds, saveType: 'manual' });
     historyCache.unshift({ _docId: docId, date, title, text, html, wordCount: wc, timerSeconds, saveType: 'manual' });
+    obSyncHistory(historyCache[0]);
   }
   renderStatsSidebar();
 }
@@ -1910,12 +1914,14 @@ async function autoSaveResearch() {
       researchCache[idx].title = title || '未命名调研';
       researchCache[idx].body = bodyText;
       researchCache[idx].bodyHTML = bodyHTML;
+      obSyncResearch(researchCache[idx]);
     }
   } else {
     const docId = await fsAdd('research', { title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'auto' });
     currentResearchAutoDocId = docId;
     researchCache.unshift({ _docId: docId, title: title || '未命名调研', body: bodyText, bodyHTML, saveType: 'auto' });
     updateResearchBadge();
+    obSyncResearch(researchCache[0]);
   }
 
   const ind = document.getElementById('researchSaveIndicator');
@@ -1951,6 +1957,7 @@ async function saveResearchNote() {
   titleEl.value = '';
   bodyEl.innerHTML = '';
   showSaveToast('调研已手动保存！', 'manual');
+  obSyncResearch(researchCache[0]);
 
   const ind = document.getElementById('researchSaveIndicator');
   ind.textContent = '\u2713 已手动保存';
@@ -1995,6 +2002,7 @@ async function addQuickIdea() {
   setTimeout(() => { input.placeholder = '灵感稍纵即逝，快记下来...'; }, 1200);
   updateIdeasBadge();
   renderIdeas();
+  obSyncIdeasForDate(todayKey());
 }
 
 function renderQuickIdeaRecent() {
@@ -2025,6 +2033,7 @@ async function addIdea() {
   renderCatPicker('ideaCatPicker', _ideaInputCats, 'toggleInputCat');
   renderIdeas();
   updateIdeasBadge();
+  obSyncIdeasForDate(todayKey());
 }
 
 async function deleteIdea(docId, btn) {
@@ -2052,6 +2061,7 @@ async function toggleIdeaDone(docId) {
   await fsUpdate('ideas', docId, { done: newDone });
   idea.done = newDone;
   renderIdeas();
+  obSyncIdeasForDate(_obDate(idea.createdAt) || todayKey());
 }
 
 function setIdeaDoneFilter(val) {
@@ -2218,6 +2228,7 @@ async function saveEditIdea(docId) {
   idea.categories = newCats;
 
   renderIdeas();
+  obSyncIdeasForDate(_obDate(idea.createdAt) || todayKey());
 }
 
 // ===== Research (tab view) =====
@@ -2581,6 +2592,7 @@ async function saveSliderEdit() {
 
       renderVersionHistory(versions);
       renderResearch();
+      obSyncResearch(item);
 
     } else if (currentModalDocId) {
       // ---- History entry ----
@@ -2625,6 +2637,7 @@ async function saveSliderEdit() {
 
       renderVersionHistory(versions);
       renderHistory();
+      obSyncHistory(entry);
     }
 
     showSaveToast('修改已保存', 'success');
@@ -2766,21 +2779,23 @@ function closeSlider() {
 let _undoState = null;
 const UNDO_DURATION = 5000;
 
-function showUndoToast(label, colName, docId, item, insertIdx) {
+function showUndoToast(label, colName, docId, item, insertIdx, obDeleteFn) {
   // Commit any previously pending delete first
   if (_undoState) {
     clearTimeout(_undoState.timer);
     fsDelete(_undoState.colName, _undoState.docId);
+    if (_undoState.obDeleteFn) _undoState.obDeleteFn();
     _undoState = null;
   }
   const timer = setTimeout(() => {
     if (_undoState && _undoState.docId === docId) {
       fsDelete(_undoState.colName, _undoState.docId);
+      if (_undoState.obDeleteFn) _undoState.obDeleteFn();
       _undoState = null;
       hideUndoToast();
     }
   }, UNDO_DURATION);
-  _undoState = { colName, docId, item, insertIdx, timer };
+  _undoState = { colName, docId, item, insertIdx, timer, obDeleteFn };
   document.getElementById('undoToastLabel').textContent = label + '已删除';
   const toast = document.getElementById('undoToast');
   toast.style.display = 'flex';
@@ -2803,12 +2818,15 @@ function undoDelete() {
   if (colName === 'ideas') {
     ideasCache.splice(insertIdx, 0, item);
     renderIdeas(); updateIdeasBadge();
+    obSyncIdeasForDate(_obDate(item.createdAt) || todayKey());
   } else if (colName === 'history') {
     historyCache.splice(insertIdx, 0, item);
     renderHistory(); updateHistoryBadge();
+    obSyncHistory(item);
   } else if (colName === 'research') {
     researchCache.splice(insertIdx, 0, item);
     renderResearch(); updateResearchBadge();
+    obSyncResearch(item);
   }
   showSaveToast('已撤销删除', 'success');
 }
@@ -2817,6 +2835,7 @@ function dismissUndo() {
   if (!_undoState) return;
   clearTimeout(_undoState.timer);
   fsDelete(_undoState.colName, _undoState.docId);
+  if (_undoState.obDeleteFn) _undoState.obDeleteFn();
   _undoState = null;
   hideUndoToast();
 }
@@ -2826,15 +2845,24 @@ function hideUndoToast() {
 }
 
 function _softDelete(colName, docId, label) {
-  let cache, renderFn, badgeFn;
+  let cache, renderFn, badgeFn, obDeleteFn;
   if (colName === 'ideas')   { cache = ideasCache;   renderFn = renderIdeas;   badgeFn = updateIdeasBadge;   }
   if (colName === 'history') { cache = historyCache;  renderFn = renderHistory; badgeFn = updateHistoryBadge; }
   if (colName === 'research'){ cache = researchCache; renderFn = renderResearch; badgeFn = updateResearchBadge; }
   const idx = cache.findIndex(i => i._docId === docId);
   if (idx < 0) return;
   const item = cache.splice(idx, 1)[0];
+  // Prepare Obsidian sync/delete function (called when undo expires)
+  if (colName === 'ideas') {
+    const d = _obDate(item.createdAt) || todayKey();
+    obDeleteFn = () => obSyncIdeasForDate(d); // regenerate day file without this idea
+  } else if (colName === 'history') {
+    obDeleteFn = () => obDeleteHistory(item);
+  } else if (colName === 'research') {
+    obDeleteFn = () => obDeleteResearch(item);
+  }
   renderFn(); if (badgeFn) badgeFn();
-  showUndoToast(label, colName, docId, item, idx);
+  showUndoToast(label, colName, docId, item, idx, obDeleteFn);
 }
 
 // ===== Delete: History Entry (from slider) =====
@@ -3271,6 +3299,7 @@ async function initApp() {
   updateHistoryBadge();
   renderIdeas();
   renderStatsSidebar();
+  initObsidianSync();
 }
 
 // ===== Stats Sidebar =====
@@ -3392,6 +3421,243 @@ function showHmTooltip(e, text) {
 function hideHmTooltip() {
   const tip = document.getElementById('hmTooltip');
   if (tip) tip.style.display = 'none';
+}
+
+// ===== Obsidian Sync (File System Access API) =====
+// Writes .md files directly into your Obsidian Vault folder.
+// Google Drive for Desktop syncs the vault to the cloud automatically.
+
+const _OB_DB = 'xinliu-ob-sync';
+const _OB_STORE = 'handles';
+let _obDirHandle = null;
+
+async function _obLoadHandle() {
+  return new Promise(resolve => {
+    const req = indexedDB.open(_OB_DB, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(_OB_STORE);
+    req.onsuccess = e => {
+      const tx = e.target.result.transaction(_OB_STORE, 'readonly');
+      const r = tx.objectStore(_OB_STORE).get('vault');
+      r.onsuccess = () => resolve(r.result || null);
+      r.onerror = () => resolve(null);
+    };
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function _obSaveHandle(handle) {
+  return new Promise(resolve => {
+    const req = indexedDB.open(_OB_DB, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(_OB_STORE);
+    req.onsuccess = e => {
+      const tx = e.target.result.transaction(_OB_STORE, 'readwrite');
+      tx.objectStore(_OB_STORE).put(handle, 'vault');
+      tx.oncomplete = resolve; tx.onerror = resolve;
+    };
+    req.onerror = resolve;
+  });
+}
+
+async function initObsidianSync() {
+  if (!('showDirectoryPicker' in window)) return;
+  const handle = await _obLoadHandle();
+  if (!handle) { _obUpdateStatus(false); return; }
+  try {
+    const perm = await handle.queryPermission({ mode: 'readwrite' });
+    _obDirHandle = handle;
+    _obUpdateStatus(perm === 'granted' ? true : 'pending');
+  } catch { _obUpdateStatus(false); }
+}
+
+async function connectObsidian() {
+  if (!('showDirectoryPicker' in window)) {
+    alert('你的浏览器不支持直接写入文件，请使用 Chrome 或 Edge。');
+    return;
+  }
+  if (_obDirHandle) {
+    // Already have a handle — just re-request permission
+    try {
+      const perm = await _obDirHandle.requestPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        _obUpdateStatus(true);
+        showSaveToast('Obsidian 已授权 ✓', 'success');
+      }
+    } catch {}
+    return;
+  }
+  try {
+    const handle = await window.showDirectoryPicker({ mode: 'readwrite' });
+    _obDirHandle = handle;
+    await _obSaveHandle(handle);
+    _obUpdateStatus(true);
+    await obFullSync();
+  } catch (e) {
+    if (e.name !== 'AbortError') console.error('Obsidian connect error:', e);
+  }
+}
+
+function _obUpdateStatus(status) {
+  const btn = document.getElementById('btnObsidian');
+  if (!btn) return;
+  if (status === true) {
+    btn.innerHTML = '<span style="color:#2D5A27">●</span> Obsidian 已连接';
+    btn.title = '已连接，自动同步中。点击重新授权。';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--accent)';
+  } else if (status === 'pending') {
+    btn.innerHTML = '<span style="color:#C4660A">●</span> Obsidian 待授权';
+    btn.title = '点击授权文件夹访问';
+    btn.style.borderColor = 'var(--orange)';
+    btn.style.color = 'var(--orange)';
+  } else {
+    btn.innerHTML = '○ 连接 Obsidian';
+    btn.title = '连接 Obsidian Vault，自动同步内容';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }
+}
+
+async function _obGetSubDir(...parts) {
+  if (!_obDirHandle) return null;
+  try {
+    const perm = await _obDirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') { _obUpdateStatus('pending'); return null; }
+    let cur = _obDirHandle;
+    for (const p of parts) cur = await cur.getDirectoryHandle(p, { create: true });
+    return cur;
+  } catch (e) { console.warn('_obGetSubDir:', e); return null; }
+}
+
+async function _obWrite(dir, filename, content) {
+  try {
+    const fh = await dir.getFileHandle(filename, { create: true });
+    const w = await fh.createWritable();
+    await w.write(content); await w.close();
+  } catch (e) { console.warn('_obWrite:', e); }
+}
+
+async function _obDelete(dir, filename) {
+  try { await dir.removeEntry(filename); } catch {}
+}
+
+function _obDate(val) {
+  if (!val) return '';
+  if (typeof val === 'string') return val.substring(0, 10);
+  if (val?.toDate) return val.toDate().toISOString().substring(0, 10);
+  if (val instanceof Date) return val.toISOString().substring(0, 10);
+  return '';
+}
+
+function _obDateTime(val) {
+  if (!val) return new Date().toISOString().replace('T', ' ').substring(0, 19);
+  if (typeof val === 'string') return val.replace('T', ' ').substring(0, 19);
+  if (val?.toDate) return val.toDate().toISOString().replace('T', ' ').substring(0, 19);
+  if (val instanceof Date) return val.toISOString().replace('T', ' ').substring(0, 19);
+  return new Date().toISOString().replace('T', ' ').substring(0, 19);
+}
+
+function _obSafe(str) {
+  return (str || '未命名').replace(/[/\\:*?"<>|]/g, '_').substring(0, 80).trim();
+}
+
+function _obHtmlToMd(html) {
+  if (!html) return '';
+  return html
+    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
+    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
+    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
+    .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+    .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+    .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+    .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n').replace(/<p[^>]*>/gi, '')
+    .replace(/<\/div>/gi, '\n').replace(/<div[^>]*>/gi, '')
+    .replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// ---- Sync: Writing Record ----
+async function obSyncHistory(item) {
+  const dir = await _obGetSubDir('心流写作', '写作记录');
+  if (!dir) return;
+  const date = item.date || _obDate(item.createdAt) || todayKey();
+  const title = _obSafe(item.title || '未命名');
+  const tags = Array.isArray(item.tags) ? item.tags : [];
+  const fm = [
+    '---',
+    `title: "${(item.title || '未命名').replace(/"/g, "'")}"`,
+    `type: 写作记录`,
+    `date: ${date}`,
+    `created: ${_obDateTime(item.createdAt)}`,
+    `updated: ${_obDateTime(item.updatedAt || item.createdAt)}`,
+    `wordCount: ${item.wordCount || 0}`,
+    `tags: [${tags.map(t => `"${t}"`).join(', ')}]`,
+    '---', ''
+  ].join('\n');
+  await _obWrite(dir, `${date}_${title}.md`, fm + (_obHtmlToMd(item.html) || item.text || ''));
+}
+
+async function obDeleteHistory(item) {
+  const dir = await _obGetSubDir('心流写作', '写作记录');
+  if (!dir) return;
+  const date = item.date || _obDate(item.createdAt) || '';
+  await _obDelete(dir, `${date}_${_obSafe(item.title || '未命名')}.md`);
+}
+
+// ---- Sync: Research ----
+async function obSyncResearch(item) {
+  const dir = await _obGetSubDir('心流写作', '调研汇总');
+  if (!dir) return;
+  const title = _obSafe(item.title || '未命名调研');
+  const tags = Array.isArray(item.tags) ? item.tags : [];
+  const fm = [
+    '---',
+    `title: "${(item.title || '未命名调研').replace(/"/g, "'")}"`,
+    `type: 调研汇总`,
+    `created: ${_obDateTime(item.createdAt)}`,
+    `updated: ${_obDateTime(item.updatedAt || item.createdAt)}`,
+    `tags: [${tags.map(t => `"${t}"`).join(', ')}]`,
+    '---', ''
+  ].join('\n');
+  await _obWrite(dir, `${title}.md`, fm + (_obHtmlToMd(item.bodyHTML) || item.body || ''));
+}
+
+async function obDeleteResearch(item) {
+  const dir = await _obGetSubDir('心流写作', '调研汇总');
+  if (!dir) return;
+  await _obDelete(dir, `${_obSafe(item.title || '未命名调研')}.md`);
+}
+
+// ---- Sync: Ideas (one file per day) ----
+const _OB_CAT_LABELS = { todo:'To Do', towrite:'To Write', tolearn:'To Research', toread:'To Read', random:'随机记录' };
+
+async function obSyncIdeasForDate(dateStr) {
+  if (!dateStr) return;
+  const dir = await _obGetSubDir('心流写作', '随机想法');
+  if (!dir) return;
+  const dayIdeas = ideasCache.filter(i => (_obDate(i.createdAt) || '') === dateStr);
+  const fm = ['---', `date: ${dateStr}`, `type: 随机想法`, `count: ${dayIdeas.length}`, '---', ''].join('\n');
+  const body = dayIdeas.length === 0 ? '（暂无想法）' : dayIdeas.map((idea, idx) => {
+    const cats = (idea.categories || []).map(c => _OB_CAT_LABELS[c] || c).join(', ') || '未分类';
+    const status = idea.done ? '✅ 已完成' : '⬜ 未完成';
+    return `## 想法 ${idx + 1}\n\n**分类:** ${cats}\n**状态:** ${status}\n**时间:** ${_obDateTime(idea.createdAt)}\n\n${idea.text}`;
+  }).join('\n\n---\n\n');
+  await _obWrite(dir, `${dateStr}.md`, fm + body);
+}
+
+// ---- Full sync ----
+async function obFullSync() {
+  if (!_obDirHandle) return;
+  showSaveToast('正在全量同步...', 'auto');
+  for (const item of historyCache) await obSyncHistory(item);
+  for (const item of researchCache) await obSyncResearch(item);
+  const dates = [...new Set(ideasCache.map(i => _obDate(i.createdAt)).filter(Boolean))];
+  for (const d of dates) await obSyncIdeasForDate(d);
+  showSaveToast('全量同步完成 ✓', 'success');
 }
 </script>
 </body>
